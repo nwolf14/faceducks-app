@@ -1,0 +1,26 @@
+.camera {
+    display: flex;
+    justify-content: center;
+
+    &__camera-node {
+        max-width: 100%;
+        height: auto !important;
+    }
+
+    &__buttons-wrapper {
+        position: fixed;
+        bottom: 10%;
+        left: 0;
+        right: 0;
+        margin: auto;
+        z-index: 30;
+        display: flex;
+        justify-content: center;
+    }
+
+    &__form-wrapper {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+    }
+}

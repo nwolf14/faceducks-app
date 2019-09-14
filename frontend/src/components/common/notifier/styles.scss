@@ -1,0 +1,15 @@
+.notify {
+    display: none;
+}
+
+.danger {
+    position:absolute;
+    top: 64px;
+    font-size: 1.5rem;
+    padding: 1rem;
+    text-align: center;
+    color: white;
+    background-color: #D77623;
+    display: block;
+    z-index: 50
+}

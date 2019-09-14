@@ -1,0 +1,1 @@
+export const SKIP_PHOTOS_DOCUMENTS = 2;

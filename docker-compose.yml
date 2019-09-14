@@ -1,0 +1,38 @@
+version: "3"
+services:
+  mongodb:
+    image: mongo:4.2
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=norbi
+      - MONGO_INITDB_ROOT_PASSWORD=norbi123
+      - MONGO_INITDB_DATABASE=faceducks
+    ports:
+      - "27015:27017"
+    volumes:
+      - ./db/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "6200:6200"
+    volumes:
+      - "./backend:/usr/src/app"
+      - "/usr/src/app/node_modules"
+    depends_on:
+      - mongodb
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - "./frontend:/usr/src/app"
+      - "/usr/src/app/node_modules"
+    ports:
+      - "3100:3000"
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - backend

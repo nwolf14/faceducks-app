@@ -1,0 +1,26 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server.js",
+    "debug": "NODE_ENV=local-debug nodemon --inspect server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^3.0.0",
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.4",
+    "express": "^4.16.3",
+    "gravatar": "^1.6.0",
+    "jsonwebtoken": "^8.3.0",
+    "mongoose": "^5.7.0",
+    "nodemailer": "^4.6.8",
+    "passport": "^0.4.0",
+    "passport-jwt": "^4.0.0",
+    "restify-cors-middleware": "^1.1.1",
+    "validator": "^10.7.1"
+  }
+}
