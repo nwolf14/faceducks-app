@@ -14,8 +14,7 @@ export function mapPhotosList(
   if (photosList) {
     const list = photosList.map(photoItem => ({
       ...photoItem,
-      date: moment.unix(photoItem.date).format("YYYY-MM-DD HH:mm:ss"),
-      key: generateUniqueKey()
+      date: moment.unix(photoItem.date).format("YYYY-MM-DD HH:mm:ss")
     }));
 
     return list.concat(list).concat(list);

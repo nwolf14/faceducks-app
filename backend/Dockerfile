@@ -6,6 +6,7 @@ WORKDIR /usr/src/app
 ENV PATH /usr/src/app/node_modules/.bin:$PATH
 
 RUN npm install -g nodemon
+RUN npm install -g typescript
 
 # install and cache app dependencies
 COPY package.json /usr/src/app/package.json

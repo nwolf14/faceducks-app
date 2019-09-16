@@ -47,7 +47,6 @@ export interface IPhotoItemProps {
   date: string;
   image: string;
   photoDescription: string;
-  key: string;
   index: number;
   style: any;
 }

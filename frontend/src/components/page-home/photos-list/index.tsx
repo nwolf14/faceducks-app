@@ -53,11 +53,11 @@ const PhotosList: FunctionComponent<{
     const classes = useStyles();
     const isMounted = useRef(false);
     const rowRenderer = useCallback(
-      ({ index, style }: { index: number; style: any }) => {
+      ({ index, style, key }: { index: number; style: any, key: string }) => {
         return (
           <PhotoItem
             {...photosList[index]}
-            key={photosList[index].key}
+            key={key}
             style={style}
             index={index}
           />

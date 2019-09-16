@@ -2,12 +2,13 @@ version: "3"
 services:
   mongodb:
     image: mongo:4.2
+    command: mongod --port 27015
     environment:
       - MONGO_INITDB_ROOT_USERNAME=norbi
       - MONGO_INITDB_ROOT_PASSWORD=norbi123
       - MONGO_INITDB_DATABASE=faceducks
     ports:
-      - "27015:27017"
+      - "27015:27015"
     volumes:
       - ./db/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
 

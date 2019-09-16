@@ -45,7 +45,7 @@ export function effectiveDeviceHeight(): number {
   return deviceHeight;
 }
 
-export const generateUniqueKey = (index = '') => '_' + Math.random().toString(36).substr(2, 9) + index;
+export const generateUniqueKey = (index: any = '') => '_' + Math.random().toString(36).substr(2, 9) + index;
 
 // // *************************** METHODS FOR FORMS
 
