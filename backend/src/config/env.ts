@@ -10,6 +10,6 @@ module.exports = function setEnvVariables() {
   }
 
   if (NODE_ENV === "local-debug") {
-    process.env.PORT = '5001';
+    process.env.PORT = '5100';
   }
 };

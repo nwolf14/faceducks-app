@@ -2,23 +2,22 @@ export {};
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const UserSchema = new Schema({
-  login: {
+const PhotoSchema = new Schema({
+  author: {
     type: String,
     required: true
   },
-  password: {
+  description: {
     type: String,
+    required: false
+  },
+  hashtagsList: {
+    type: Array,
     required: true
   },
-  email: {
+  photo: {
     type: String,
-    required: true,
-    unique: true
-  },
-  is_mail_confirmed: {
-    type: Boolean,
-    default: false
+    required: true
   },
   created_at: {
     type: Date,
@@ -26,6 +25,6 @@ const UserSchema = new Schema({
   }
 });
 
-let User;
+let Photo;
 
-module.exports = User = mongoose.model("users", UserSchema);
+module.exports = Photo = mongoose.model("photo", PhotoSchema);

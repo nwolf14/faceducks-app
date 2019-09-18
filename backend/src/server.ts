@@ -1,5 +1,5 @@
-// require('./services/mailer');
 export {};
+require('./services/mailer');
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
@@ -7,34 +7,26 @@ const passport = require("passport");
 const cors = require("cors");
 const server = express();
 
-// Set environment variables
+const users = require("./routes/api/users");
+const photos = require("./routes/api/photos");
+const db = require("./config/keys").mongoURI;
 const setEnvVariables = require("./config/env.js");
+
 setEnvVariables();
 
-// Bodyparser Middleware
 server.use(bodyParser.json());
-// Cors Middleware
 server.use(cors({ credentials: true, origin: true }));
 server.options("*", cors({ credentials: true, origin: true }));
+server.use(passport.initialize());
+require("./config/passport")(passport);
 
-// DB Config
-const db = require("./config/keys").mongoURI;
-
-// Connect to Mongo
 mongoose
   .connect(db)
   .then(() => console.log("MongoDB Connected..."))
   .catch((err: string) => console.log(err));
 
-// Passport middleware
-server.use(passport.initialize());
-
-// Passport Config
-require("./config/passport")(passport);
-
-// Use Routes
-const users = require("./routes/api/users");
 server.use("/api/users", users);
+server.use("/api", photos);
 
 const port = process.env.PORT || 6200;
 

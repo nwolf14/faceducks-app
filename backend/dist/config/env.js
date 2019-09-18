@@ -7,7 +7,7 @@ module.exports = function setEnvVariables() {
         process.env.PORT = '6200';
     }
     if (NODE_ENV === "local-debug") {
-        process.env.PORT = '5001';
+        process.env.PORT = '5100';
     }
 };
 //# sourceMappingURL=env.js.map

@@ -1,28 +1,17 @@
+import { IUserInput } from '../interfaces';
 const Validator = require("validator");
 const _ = require("lodash");
-
-interface IUserInput {
-  email?: string;
-  password?: string;
-  repeatPassword?: string;
-  login?: string;
-}
 
 module.exports = function validateSignUpInput(data: IUserInput) {
   let errors: IUserInput = {};
 
-  // Set data to be a string type if there is such property
-  data.email = !_.isEmpty(data.email) ? data.email : "";
-  data.password = !_.isEmpty(data.password) ? data.password : "";
-  data.repeatPassword = !_.isEmpty(data.repeatPassword)
-    ? data.repeatPassword
-    : "";
-
-  if (Validator.isEmpty(data.email)) {
-    errors.email = "LOGIN_REQUIRED";
+  if (_.isEmpty(data.userName)) {
+    data.userName = "";
+    errors.userName = "USER_NAME_REQUIRED";
   }
 
-  if (Validator.isEmpty(data.email)) {
+  if (_.isEmpty(data.email)) {
+    data.email = "";
     errors.email = "EMAIL_REQUIRED";
   }
 
@@ -30,7 +19,8 @@ module.exports = function validateSignUpInput(data: IUserInput) {
     errors.email = "EMAIL_INVALID";
   }
 
-  if (Validator.isEmpty(data.password)) {
+  if (_.isEmpty(data.password)) {
+    data.password = "";
     errors.password = "PASSWORD_REQUIRED";
   }
 
@@ -42,7 +32,8 @@ module.exports = function validateSignUpInput(data: IUserInput) {
     errors.password = "PASSWORD_TOO_LONG";
   }
 
-  if (Validator.isEmpty(data.repeatPassword)) {
+  if (_.isEmpty(data.repeatPassword)) {
+    data.repeatPassword = "";
     errors.repeatPassword = "PASSWORD_CONFIRM_REQUIRED";
   }
 

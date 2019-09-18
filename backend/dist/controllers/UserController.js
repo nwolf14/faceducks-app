@@ -4,18 +4,16 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const gravatar = require("gravatar");
 const jwt = require("jsonwebtoken");
+const nodemailer = require('nodemailer');
 const keys = require("../config/keys");
-// Load input Validation
 const validateSignUpInput = require("../validation/signup");
 const validateSignInInput = require("../validation/signin");
 const create = function (req, res) {
     const { isValid, errors } = validateSignUpInput(req.body);
-    // Check Validation
+    const { password, email, userName } = req.body;
     if (!isValid) {
         return res.status(400).json({ errors });
     }
-    const password = req.body.password;
-    const email = req.body.email;
     User.findOne({ email })
         .then((user) => {
         if (user) {
@@ -31,7 +29,8 @@ const create = function (req, res) {
             const newUser = new User({
                 password,
                 email,
-                avatar
+                avatar,
+                userName
             });
             bcrypt.genSalt(10, (err, salt) => {
                 bcrypt.hash(password, salt, (err, hash) => {
@@ -41,13 +40,15 @@ const create = function (req, res) {
                     newUser
                         .save()
                         .then((user) => {
-                        // let mailOptions = {
-                        //     from: '"Oddjobs" <oddjobs699@gmail.com>',
-                        //     to: user.email,
-                        //     subject: 'Activation account link',
-                        //     html: `<a href="http://localhost:5001/api/users/activate/${user._id}">Activate account</a>`
-                        // };
-                        // mailSender.sendMail(mailOptions, (error, info) => {
+                        const anyGlobal = global;
+                        const { mailSender } = anyGlobal;
+                        const mailOptions = {
+                            from: '"Oddjobs" <oddjobs699@gmail.com>',
+                            to: user.email,
+                            subject: 'Activation account link',
+                            html: `<a href="http://localhost:${process.env.PORT}/api/users/activate/${user._id}">Activate account</a>`
+                        };
+                        // mailSender.sendMail(mailOptions, (error:any, info: any) => {
                         //     if (error) return console.log(error);
                         //     console.log('Message sent: %s', info.messageId);
                         //     console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
@@ -55,30 +56,26 @@ const create = function (req, res) {
                         return user;
                     })
                         .then((user) => res.json(user))
-                        .catch((err) => console.log(err));
+                        .catch((err) => res.status(400).json({ error: err.message }));
                 });
             });
         }
     })
-        .catch((err) => console.log(err));
+        .catch((err) => res.status(500).json({ error: err.message }));
 };
 module.exports.create = create;
 const signIn = function (req, res) {
     const { isValid, errors } = validateSignInInput(req.body);
+    const { email, password } = req.body;
     if (!isValid) {
         return res.status(400).json({ errors });
     }
-    const email = req.body.email;
-    const password = req.body.password;
-    // Find user by email
     User.findOne({ email })
         .then((user) => {
-        // Check for user
         if (!user) {
             errors.email = "EMAIL_NOT_FOUND";
             return res.status(404).json({ errors });
         }
-        // Check password
         bcrypt.compare(password, user.password).then((isMatch) => {
             if (isMatch) {
                 // User Matched
@@ -102,7 +99,7 @@ const signIn = function (req, res) {
             }
         });
     })
-        .catch((err) => console.log(err));
+        .catch((err) => res.status(500).json({ error: err.message }));
 };
 module.exports.signIn = signIn;
 const get = function (req, res) {
