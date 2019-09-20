@@ -18,7 +18,7 @@ server.options("*", cors({ credentials: true, origin: true }));
 server.use(passport.initialize());
 require("./config/passport")(passport);
 mongoose
-    .connect(db)
+    .connect(db, { useUnifiedTopology: true, useNewUrlParser: true })
     .then(() => console.log("MongoDB Connected..."))
     .catch((err) => console.log(err));
 server.use("/api/users", users);

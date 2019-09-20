@@ -1,5 +1,6 @@
 let config = {
-    host: "",
+    host: "http://localhost:6200",
+    frontHost: "http://localhost:5000",
     nodemailer: {
         host: "smtp.gmail.com",
         port: 465,
@@ -16,9 +17,13 @@ let config = {
         }
     }
 };
-if (process.env.NODE_ENV === "development" ||
-    process.env.NODE_ENV === "local-debug") {
-    config.host = "http://localhost:" + process.env.PORT;
+if (process.env.NODE_ENV === "development") {
+    config.host = "http://localhost:6200";
+    config.frontHost = "http://localhost:3000";
+}
+if (process.env.NODE_ENV === "local-debug") {
+    config.host = "http://localhost:5100";
+    config.frontHost = "http://localhost:3000";
 }
 module.exports = Object.assign({}, config);
-//# sourceMappingURL=config.js.map
+//# sourceMappingURL=index.js.map

@@ -8,6 +8,10 @@ const UserController = require("../../controllers/UserController");
 // @desc Register new user
 // @access Public
 router.post("/signup", UserController.create);
+// @route GET /users/activate
+// @desc Activate new registered user
+// @access Public
+router.get("/activate/:userId", UserController.activate);
 // @route POST /users/signin
 // @desc Login user / Return JWT
 // @access Public

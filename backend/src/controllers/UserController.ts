@@ -1,11 +1,11 @@
 import { IUser } from "../interfaces";
-
 export {};
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const gravatar = require("gravatar");
 const jwt = require("jsonwebtoken");
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
+const { host, frontHost } = require("../config");
 const keys = require("../config/keys");
 const validateSignUpInput = require("../validation/signup");
 const validateSignInInput = require("../validation/signin");
@@ -15,7 +15,7 @@ const create = function(req: any, res: any) {
   const { password, email, userName } = req.body;
 
   if (!isValid) {
-    return res.status(400).json({ errors }); 
+    return res.status(400).json({ errors });
   }
 
   User.findOne({ email })
@@ -48,27 +48,32 @@ const create = function(req: any, res: any) {
                 const anyGlobal: any = global;
                 const { mailSender } = anyGlobal;
                 const mailOptions = {
-                    from: '"Oddjobs" <oddjobs699@gmail.com>',
-                    to: user.email,
-                    subject: 'Activation account link',
-                    html: `<a href="http://localhost:${process.env.PORT}/api/users/activate/${user._id}">Activate account</a>`
+                  from: '"Faceducks" <nwolf960@gmail.com>',
+                  to: user.email,
+                  subject: "Activation your account",
+                  html: `<a href="${host}/api/users/activate/${user._id}">Use this link to activate your account</a>`
                 };
 
-                // mailSender.sendMail(mailOptions, (error:any, info: any) => {
-                //     if (error) return console.log(error);
-                //     console.log('Message sent: %s', info.messageId);
-                //     console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-                // });
+                mailSender.sendMail(mailOptions, (error: any, info: any) => {
+                  if (error) return console.log(error);
+                  console.log("Message sent: %s", info.messageId);
+                  console.log(
+                    "Preview URL: %s",
+                    nodemailer.getTestMessageUrl(info)
+                  );
+                });
 
                 return user;
               })
               .then((user: any) => res.json(user))
-              .catch((err: any) => res.status(400).json({ error: err.message}));
+              .catch((err: any) =>
+                res.status(400).json({ error: err.message })
+              );
           });
         });
       }
     })
-    .catch((err: any) => res.status(500).json({ error: err.message}));
+    .catch((err: any) => res.status(500).json({ error: err.message }));
 };
 
 module.exports.create = create;
@@ -120,6 +125,31 @@ const signIn = function(req: any, res: any) {
 };
 
 module.exports.signIn = signIn;
+
+const activate = function(req: any, res: any) {
+  const { userId } = req.params;
+  if (userId) {
+    User.findOneAndUpdate(
+      { _id: userId },
+      { is_mail_confirmed: true },
+      { useFindAndModify: true }
+    )
+      .then(() => {
+        res.set("Content-Type", "text/html");
+        res.send(new Buffer(`
+          <div style='height: 100%; text-align: center;'>
+            <h3>Account activated :)</h3>
+            <a href="${frontHost}">Click here to go back to the faceducks.com website</a>
+          </div>
+        `));
+      })
+      .catch((err: any) => res.status(404).json({ error: err.message }));
+  } else {
+    res.status(400).json({ error: "MISSING_ID_PARAM" });
+  }
+};
+
+module.exports.activate = activate;
 
 const get = function(req: any, res: any) {
   res.json({
