@@ -26,12 +26,12 @@ let config: {
 
 if (process.env.NODE_ENV === "development") {
   config.host = "http://localhost:6200";
-  config.frontHost = "http://localhost:3000";
+  config.frontHost = "http://localhost:3100";
 }
 
 if (process.env.NODE_ENV === "local-debug") {
   config.host = "http://localhost:5100";
-  config.frontHost = "http://localhost:3000";
+  config.frontHost = "http://localhost:3100";
 }
 
 module.exports = { ...config };

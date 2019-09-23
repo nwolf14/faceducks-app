@@ -5,8 +5,8 @@ import { Recaptcha } from "../../";
 import {
   IInputStructure,
   IForm,
-  IOptionsObject,
-  IAnyObject
+  IObjectOfObject,
+  IObjectOfAny
 } from "../../../interfaces";
 import "./styles.scss";
 import { TextField } from "@material-ui/core";
@@ -16,7 +16,7 @@ export default function createInputs(
   formStructure: IForm,
   formData: IForm,
   handleChange: React.ChangeEventHandler,
-  options: IOptionsObject<{ [key: string]: any }>
+  options: IObjectOfObject<{ [key: string]: any }>
 ): JSX.Element[] {
   return _.map(formStructure, (input, inputName) => (
     <CreateInputByType
@@ -58,7 +58,7 @@ class CreateInputByType extends Component<ICreateInputByTypeProps, {}> {
             id={inputName}
             {...options}
           >
-            {inputElement.options.map((option: IAnyObject) => (
+            {inputElement.options.map((option: IObjectOfAny) => (
               <option value={option.name} key={option.name}>
                 {option.name}
               </option>

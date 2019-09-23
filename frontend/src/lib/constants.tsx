@@ -1,4 +1,4 @@
-import { IInputTypes, IRoutes } from "../interfaces";
+import { IInputTypes, IRoutes, IObjectOfStrings } from "../interfaces";
 
 export const ROUTES: IRoutes = {
   HOME: "/",
@@ -23,7 +23,7 @@ export const INPUT_TYPES_NAMES: IInputTypes = {
   RECAPTCHA: "recaptcha",
   GDPR_AGREEMENT: "is_gdpr_accepted",
   PHOTO_DESCRIPTION: "photoDescription",
-  PHOTO_KEYWORDS: "photoKeywords",
+  PHOTO_KEYWORDS: "hashtagsList"
 };
 
 export const FORMS_LABELS = {
@@ -49,4 +49,24 @@ export const FORMS_LABELS = {
   PLACEHOLDERS: {
     PHOTO_KEYWORDS: "#party #friends #city #travel #night",
   }
+};
+
+export const SKIP_PHOTOS_DOCUMENTS: number = 2;
+
+export const API_ERRORS: IObjectOfStrings = {
+  PASSWORD_INCORRECT: "Password is incorrect",
+  PASSWORD_REQUIRED: "Password is empty",
+  PASSWORD_TOO_SHORT: "",
+  PASSWORD_TOO_LONG: "",
+  PASSWORD_CONFIRM_REQUIRED: "",
+  PASSWORD_CONFIRM_INVALID: "",
+  EMAIL_NOT_CONFIRMED: "Your account is not activated",
+  EMAIL_NOT_FOUND: "Your email was not found",
+  EMAIL_EXISTS: "Email is already taken",
+  EMAIL_REQUIRED: "Email is empty",
+  EMAIL_INVALID: "Email is incorrect",
+  USER_NAME_REQUIRED: "User name is empty",
+  AUTHOR_REQUIRED: "Author is required",
+  PHOTO_REQUIRED: "Photo is required",
+  HASHTAGS_REQUIRED: "Hashtags list required",
 };

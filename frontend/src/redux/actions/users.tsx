@@ -1,17 +1,25 @@
 import { ActionCreator } from "redux";
+import { FetchApi } from "../../services";
 
 export const USER_ACTIONS = {
-  SAVE_USER: 'SAVE_USER'
+  GET_USER: "GET_USER"
 };
 
-export interface ISaveUserAction {
+export interface IGetUserAction {
   type: string;
   userData: object;
 }
 
-export const saveUser: ActionCreator<ISaveUserAction> = (userData: object) => {
-  return {
-    type: USER_ACTIONS.SAVE_USER,
-    userData
-  }
-}
+export const getUser: ActionCreator<Function> = (token: string) => (
+  dispatch: any
+) => {
+  FetchApi.get("/api/users/current", token).subscribe((data: any) => {
+    console.log('user data:', data)
+    if (!data || data.errors) return;
+
+    dispatch({
+      type: USER_ACTIONS.GET_USER,
+      userData: data
+    });
+  });
+};

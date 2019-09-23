@@ -1,25 +1,29 @@
 import React, { PureComponent } from "react";
 import ReactDOM from 'react-dom';
-import { Subject, Observer, Observable } from "rxjs";
+import { Subject } from "rxjs";
 import { concatMap } from "rxjs/operators";
-import firebase from "firebase";
 import { withRouter, RouteComponentProps } from "react-router";
 import Button from "@material-ui/core/Button";
 
 import { LinkWrapper } from "../../_HOCs";
-import { FormInputsCreator, Spinner } from "../..";
-import loginFormModel from "../../../models/login-form";
-import { IForm } from "../../../interfaces";
+import { FormInputsCreator, Spinner, FormErrors } from "../..";
+import LoginFormModel from "../../../models/login-form";
+import { IForm, IObjectOfStrings } from "../../../interfaces";
 import {
   mapFormValuesForRequest,
   setFocusOnFirstFormElement
 } from "../../../lib/forms";
 import "./styles.scss";
+import { FetchApi } from "../../../services";
+import { getUser } from "../../../redux/actions/users";
+import { connect } from "react-redux";
 
-interface IProps extends RouteComponentProps<{}> {}
+interface IProps extends RouteComponentProps<{}> {
+  getUser: Function;
+}
 interface ILoginState {
   loginForm: IForm;
-  loginErrorMessage: string;
+  loginErrors: IObjectOfStrings | string | null;
   submitting: boolean;
   submitted: boolean;
 }
@@ -34,8 +38,8 @@ class LoginForm extends PureComponent<IProps, ILoginState> {
     this.formSubmitStream$ = new Subject();
     this.formNode = React.createRef();
     this.state = {
-      loginForm: loginFormModel,
-      loginErrorMessage: "",
+      loginForm: LoginFormModel,
+      loginErrors: null,
       submitting: false,
       submitted: false
     };
@@ -60,33 +64,23 @@ class LoginForm extends PureComponent<IProps, ILoginState> {
             submitting: true
           }));
 
-          return Observable.create(
-            (observer: Observer<firebase.auth.UserCredential>) => {
-              firebase
-                .auth()
-                .signInWithEmailAndPassword(
-                  mappedForm.email,
-                  mappedForm.password
-                )
-                .then(data => observer.next(data))
-                .catch(error => observer.next(error))
-                .finally(() => observer.complete());
-            }
-          );
-        })
+          return FetchApi.post<any>('/api/users/signin', mappedForm);
+        }),
       )
       .subscribe((data: any) => {
         console.log(data);
-        if (data.code) {
-          this.loginError(data.message);
+        if (data.errors) {
+          this.loginError(data.errors);
         } else {
-          this.loginSuccess(data);
+          this.loginSuccess(data.token);
         }
       });
   }
 
-  loginSuccess(userData: firebase.auth.UserCredential) {
+  loginSuccess(token: string) {
+    localStorage.setItem('JWT', token);
     const node = ReactDOM.findDOMNode(this);
+
     if (node !== null) {
       node.dispatchEvent(
         new CustomEvent("open-modal", {
@@ -98,14 +92,17 @@ class LoginForm extends PureComponent<IProps, ILoginState> {
         })
       );
     }
+
+    this.props.getUser(token);
+
     this.props.history.push("/");
   }
 
-  loginError(message: string): void {
+  loginError(errors: string | IObjectOfStrings): void {
     setFocusOnFirstFormElement(this.formNode.current);
     this.setState(prevState => ({
       ...prevState,
-      loginErrorMessage: message,
+      loginErrors: errors,
       submitting: false
     }));
   }
@@ -127,7 +124,7 @@ class LoginForm extends PureComponent<IProps, ILoginState> {
 
   render() {
     const FormInputs: JSX.Element[] = FormInputsCreator(
-      loginFormModel,
+      LoginFormModel,
       this.state.loginForm,
       this.handleChange,
       {}
@@ -142,7 +139,7 @@ class LoginForm extends PureComponent<IProps, ILoginState> {
         aria-label="login form"
       >
         {FormInputs}
-        <small className="form-error">{this.state.loginErrorMessage}</small>
+        <FormErrors errors={this.state.loginErrors} />
         <div className="form-buttons-wrapper">
           <Button
             variant="outlined"
@@ -164,4 +161,4 @@ class LoginForm extends PureComponent<IProps, ILoginState> {
   }
 }
 
-export default withRouter(LoginForm);
+export default connect(null, { getUser })(withRouter(LoginForm));

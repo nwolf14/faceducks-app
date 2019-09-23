@@ -12,7 +12,7 @@ const create = function (req, res) {
     newPhoto
         .save()
         .then(() => {
-        res.status(200).send('ok');
+        res.status(200).json({ success: true });
     })
         .catch((err) => {
         res.status(400).json({ error: err.message });
@@ -22,10 +22,11 @@ module.exports.create = create;
 const get = function (req, res) {
     const { author, skip = 0, limit = 10 } = req.query;
     const filter = {};
+    const sort = { created_at: -1 };
     if (author) {
         filter.author = new RegExp(`/${author}/`);
     }
-    Photo.find(filter, null, { skip, limit })
+    Photo.find(filter, null, { skip, limit, sort })
         .then((photos) => res.json({ result: photos }))
         .catch((err) => res.status(500).json({ error: err.message }));
 };

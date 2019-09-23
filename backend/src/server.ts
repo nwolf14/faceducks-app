@@ -14,7 +14,7 @@ const setEnvVariables = require("./config/env.js");
 
 setEnvVariables();
 
-server.use(bodyParser.json());
+server.use(bodyParser.json({ limit: "5mb" })); 
 server.use(cors({ credentials: true, origin: true }));
 server.options("*", cors({ credentials: true, origin: true }));
 server.use(passport.initialize());

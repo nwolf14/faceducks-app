@@ -1,3 +1,5 @@
+import { RefObject } from "react";
+
 export interface IInputStructure {
   type: string;
   name: string;
@@ -36,21 +38,16 @@ export interface IBase64ImageWithSize extends ICanvasImageSize {
   base64: string;
 }
 
-export interface IOptionsObject<T extends Object> {
+export interface IObjectOfObject<T extends Object> {
   [key: string]: T;
 }
 
-export interface IAnyObject {
+export interface IObjectOfAny {
   [key: string]: any;
 }
 
-export interface IMappedForm {
+export interface IObjectOfStrings {
   [key: string]: string;
-}
-
-export interface IFirebaseError {
-  code: string;
-  message: string;
 }
 
 export interface IObserver {
@@ -61,4 +58,10 @@ export interface IObserver {
 
 export interface IUserDataProps {
   userData: object;
+}
+
+export interface IFormWithEvent {
+  event: React.FormEvent<HTMLFormElement>;
+  form: IForm;
+  formNode: RefObject<HTMLFormElement>;
 }

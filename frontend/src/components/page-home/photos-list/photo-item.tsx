@@ -23,8 +23,10 @@ const useStyles = makeStyles((theme: Theme) =>
       position: "relative"
     },
     media: {
-      height: 0,
-      paddingTop: "300px" // 16:9
+      display: 'block',
+      maxWidth: '100%',
+      maxHeight: '330px',
+      margin: 'auto'
     },
     expand: {
       transform: "rotate(0deg)",
@@ -44,18 +46,18 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export interface IPhotoItemProps {
   author: string;
-  date: string;
-  image: string;
-  photoDescription: string;
+  created_at: string;
+  photo: string;
+  description: string;
   index: number;
   style: any;
 }
 
 const PhotoItem: FunctionComponent<IPhotoItemProps> = ({
   author,
-  date,
-  image,
-  photoDescription,
+  created_at,
+  photo,
+  description,
   index,
   style
 }) => {
@@ -84,17 +86,18 @@ const PhotoItem: FunctionComponent<IPhotoItemProps> = ({
             </IconButton>
           }
           title={author}
-          subheader={date}
+          subheader={created_at}
         />
-        <CardMedia
+        <img
           className={classes.media}
-          image="/images/img.jpg"
+          src={photo}
+          alt={`${author}'s photo`}
           title={`${author}'s photo`}
         />
         <CardContent>
           <Typography variant="body2" color="textSecondary" component="p">
             <span>
-              {index} {photoDescription}
+              {index} {description}
             </span>
           </Typography>
         </CardContent>

@@ -1,18 +1,17 @@
 import React, { memo } from "react";
-import { connect } from "react-redux";
 import { Fab, Tooltip } from "@material-ui/core";
 import AddIcon from "@material-ui/icons/Add";
 
-import { IUserDataProps } from "../../interfaces";
 import { PhotosList } from "../../components/page-home";
 import { LinkWrapper } from "../../components/_HOCs";
 import "./styles.scss";
 
-const HomePage: React.SFC<IUserDataProps> = memo(({ userData }) => {
+const HomePage: React.SFC<{}> = memo(() => {
+  const userToken = localStorage.getItem("JWT");
   return (
     <main className="home-page">
     <PhotosList />
-      {userData && (
+      {userToken && (
         <LinkWrapper
           ariaLabel="add new photo"
           href="/take-picture"
@@ -29,6 +28,4 @@ const HomePage: React.SFC<IUserDataProps> = memo(({ userData }) => {
   );
 });
 
-const mapStateToProps = (state: any) => ({ userData: state.user.userData });
-
-export default connect(mapStateToProps)(HomePage);
+export default HomePage;

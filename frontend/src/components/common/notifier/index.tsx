@@ -8,7 +8,7 @@ import './styles.scss';
 interface INotifierProps {
   offline: boolean;
   setOfflineState: Function;
-  children: JSX.Element;
+  children: JSX.Element[];
 }
 
 class Notifier extends Component<INotifierProps, {}> {

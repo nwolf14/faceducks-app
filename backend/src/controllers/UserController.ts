@@ -65,7 +65,7 @@ const create = function(req: any, res: any) {
 
                 return user;
               })
-              .then((user: any) => res.json(user))
+              .then((user: any) => res.json({  success: true, user }))
               .catch((err: any) =>
                 res.status(400).json({ error: err.message })
               );
@@ -93,6 +93,11 @@ const signIn = function(req: any, res: any) {
         return res.status(404).json({ errors });
       }
 
+      if (!user.is_mail_confirmed) {
+        errors.email = "EMAIL_NOT_CONFIRMED";
+        return res.status(400).json({ errors });
+      }
+
       bcrypt.compare(password, user.password).then((isMatch: boolean) => {
         if (isMatch) {
           // User Matched
@@ -108,12 +113,7 @@ const signIn = function(req: any, res: any) {
             payload,
             keys.secretOrKey,
             { expiresIn: 3600 },
-            (err: string, token: string) => {
-              res.json({
-                success: true,
-                token: "Bearer " + token
-              });
-            }
+            (err: string, token: string) => res.json({ success: true, token: "Bearer " + token})
           );
         } else {
           errors.password = "PASSWORD_INCORRECT";
@@ -136,12 +136,14 @@ const activate = function(req: any, res: any) {
     )
       .then(() => {
         res.set("Content-Type", "text/html");
-        res.send(new Buffer(`
+        res.send(
+          new Buffer(`
           <div style='height: 100%; text-align: center;'>
             <h3>Account activated :)</h3>
             <a href="${frontHost}">Click here to go back to the faceducks.com website</a>
           </div>
-        `));
+        `)
+        );
       })
       .catch((err: any) => res.status(404).json({ error: err.message }));
   } else {
@@ -154,7 +156,7 @@ module.exports.activate = activate;
 const get = function(req: any, res: any) {
   res.json({
     id: req.user.id,
-    name: req.user.name,
+    userName: req.user.userName,
     email: req.user.email
   });
 };

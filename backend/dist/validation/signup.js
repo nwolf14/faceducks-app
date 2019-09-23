@@ -22,7 +22,7 @@ module.exports = function validateSignUpInput(data) {
     if (!Validator.isLength(data.password, { min: 6 })) {
         errors.password = "PASSWORD_TOO_SHORT";
     }
-    if (!Validator.isLength(data.password, { max: 100 })) {
+    if (!Validator.isLength(data.password, { max: 50 })) {
         errors.password = "PASSWORD_TOO_LONG";
     }
     if (_.isEmpty(data.repeatPassword)) {

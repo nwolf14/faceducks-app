@@ -7,16 +7,14 @@ import React, {
 } from "react";
 import { List, AutoSizer } from "react-virtualized";
 import { connect } from "react-redux";
-import firebase from "firebase";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 
-import { writeData, readAllData, clearAllData } from "../../../lib/utility";
+import { readAllData } from "../../../lib/utility";
 import { photosListSelector } from "../../../redux/selectors/photos";
 import PhotoItem, { IPhotoItemProps } from "./photo-item";
 import { Spinner } from "../../";
-import { IUserData } from "../../../interfaces";
-import {
-  photosListSuccess,
+ import {
+  saveCachedPhotosList,
   requestPhotosList
 } from "../../../redux/actions/photos";
 import { Grid } from "@material-ui/core";
@@ -33,7 +31,6 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const PhotosList: FunctionComponent<{
-  userData: IUserData;
   photosList: Array<IPhotoItemProps>;
   error: string;
   isLoading: boolean;
@@ -42,7 +39,6 @@ const PhotosList: FunctionComponent<{
   requestPhotosList: Function;
 }> = memo(
   ({
-    userData,
     photosList,
     error,
     isLoading,
@@ -67,26 +63,8 @@ const PhotosList: FunctionComponent<{
     );
 
     const getPhotosListFromDb = useCallback(() => {
-      const dbCollection = firebase.database().ref("/photos");
-
-      requestPhotosList();
-
       if (!offline) {
-        dbCollection
-          .orderByChild("date")
-          .once("value")
-          .then(snapshot => {
-            const data: any = [];
-            clearAllData("posts").then(() => {
-              snapshot.forEach(function(child) {
-                const post = child.val();
-                data.push(post);
-                writeData("posts", post);
-              });
-
-              savePhotosList(data);
-            });
-          });
+        requestPhotosList();
       } else {
         const cachedPosts = readAllData("posts");
         cachedPosts.then(data => savePhotosList(data));
@@ -139,12 +117,11 @@ const PhotosList: FunctionComponent<{
 );
 
 const mapDispatchToProps = (dispatch: any) => ({
-  savePhotosList: (data: Array<any>) => dispatch(photosListSuccess(data)),
+  savePhotosList: (data: Array<any>) => dispatch(saveCachedPhotosList(data)),
   requestPhotosList: () => dispatch(requestPhotosList())
 });
 
 const mapStateToProps = (state: any) => ({
-  userData: state.user.userData,
   photosList: photosListSelector(state),
   isLoading: state.photos.isPhotosListLoading,
   error: state.photos.photosListError,

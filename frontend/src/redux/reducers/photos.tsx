@@ -1,7 +1,6 @@
 import { Reducer } from "react";
 import { PHOTOS_ACTIONS, IPhotosActionsProps } from "../actions/photos";
-import { SKIP_PHOTOS_DOCUMENTS } from '../../config';
-import { mapPhotosList } from '../../lib/data-mappers';
+import { SKIP_PHOTOS_DOCUMENTS } from '../../lib/constants';
 
 export interface IPhotosReducerState {
   photosList: Array<any>;
@@ -37,7 +36,7 @@ export const photos: Reducer<any, IPhotosActionsProps> = (state = defaultState, 
       })
     case PHOTOS_ACTIONS.PHOTOS_LIST_SUCCESS:
       return Object.assign({}, state, {
-        photosList: mapPhotosList(action.data),
+        photosList: action.data,
         isPhotosListLoading: false,
         photosListError: '',
         skipped: state.skipped + SKIP_PHOTOS_DOCUMENTS

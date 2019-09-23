@@ -1,13 +1,72 @@
-import { IInputStructure, IForm, IMappedForm } from "../interfaces";
+import React from "react";
+import {
+  IInputStructure,
+  IObjectOfStrings,
+  IForm,
+  IFormWithEvent
+} from "../interfaces";
 import _ from "lodash";
-import { INPUT_TYPES_NAMES } from './constants';
+import { INPUT_TYPES_NAMES, API_ERRORS } from "./constants";
+import { FormValidator } from "../services";
 
+export function validateForm({ event, form, formNode }: IFormWithEvent) {
+  event.preventDefault();
 
-export function setFocusOnFirstInvalidInput(inputsWithErrors: IInputStructure[], formElements: HTMLFormControlsCollection): void {
-  const inputName = _.get(_.first(inputsWithErrors), 'name', '');
-  const input = _.get(formElements, inputName);
+  const validatedForm = FormValidator.validateForm(form);
+  const inputsWithErrors = _.filter(validatedForm, input => !input.isValid);
 
-  console.log('inputsWithErrors: ', inputsWithErrors);
+  if (
+    formNode.current instanceof HTMLFormElement &&
+    inputsWithErrors.length > 0
+  ) {
+    setFocusOnFirstInvalidInput(form, formNode.current.elements);
+
+    throw { validatedFormWithErrors: validatedForm }; // eslint-disable-line
+  }
+
+  return mapFormValuesForRequest(validatedForm);
+}
+
+export function handleChange(
+  e: React.ChangeEvent<HTMLInputElement>,
+  form: IForm
+): IForm {
+  const { value, name } = e.target;
+  const newForm = Object.assign({}, form);
+  let input = newForm[name] || {};
+
+  input.touched = true;
+  input.value = value;
+  input = chooseInputValidationSchema(input, name, newForm);
+
+  newForm[name] = input;
+
+  return newForm;
+}
+
+export function mergeFormWithApiErrors(
+  form: IForm,
+  errors: IObjectOfStrings
+): IForm {
+  const mergedForm = Object.assign({}, form);
+  for (const key in errors) {
+    if (mergedForm[key]) {
+      mergedForm[key].errorMsg = API_ERRORS[errors[key]];
+    }
+  }
+  return mergedForm;
+}
+
+export function setFocusOnFirstInvalidInput(
+  form: IForm,
+  formElements: HTMLFormControlsCollection
+): void {
+  const inputWithError = _.find(form, "errorMsg");
+
+  if (!inputWithError) return;
+
+  const input = _.get(formElements, inputWithError.name);
+
   if (input) {
     input.focus();
   }
@@ -22,8 +81,8 @@ export function setFocusOnFirstFormElement(
   }
 }
 
-export function mapFormValuesForRequest(form: IForm): IMappedForm {
-  const mappedForm: IMappedForm = {};
+export function mapFormValuesForRequest(form: IForm): IObjectOfStrings {
+  const mappedForm: IObjectOfStrings = {};
   for (let prop in form) {
     mappedForm[prop] = form[prop].value;
   }
@@ -61,7 +120,7 @@ export function createInputstructure(
   name: string = "",
   label: string,
   extraProps: object = {},
-  required: boolean = false,
+  required: boolean = false
 ): IInputStructure {
   return {
     type,
@@ -75,18 +134,3 @@ export function createInputstructure(
     ...extraProps
   };
 }
-
-// export function renderResponseErrors(errors) {
-// 	return (
-// 		<div>
-// 			<h3 className="error">Errors:</h3>
-// 			{_.map(errors, (error, key) => {
-// 				return (
-// 					<p key={key}>
-// 						{key}: {error}
-// 					</p>
-// 				);
-// 			})}
-// 		</div>
-// 	);
-// }

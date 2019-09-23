@@ -1,4 +1,6 @@
 import { ActionCreator } from "redux";
+import { FetchApi } from "../../services";
+import { clearAllData, writeData } from "../../lib/utility";
 
 export const PHOTOS_ACTIONS = {
   PHOTOS_LIST_ERROR: "PHOTOS_LIST_ERROR",
@@ -16,24 +18,43 @@ export interface IPhotosActionsProps {
   data?: Array<any>;
 }
 
-export const requestPhotosList: ActionCreator<IPhotosActionsProps> = () => ({
-  type: PHOTOS_ACTIONS.PHOTOS_LIST_REQUSTED
-});
-export const photosListError: ActionCreator<IPhotosActionsProps> = (
-  message: string
-) => ({
-  type: PHOTOS_ACTIONS.PHOTOS_LIST_ERROR,
-  message
-});
-export const photosListCached: ActionCreator<IPhotosActionsProps> = () => ({
-  type: PHOTOS_ACTIONS.PHOTOS_LIST_CACHED
-});
-export const photosListSuccess: ActionCreator<IPhotosActionsProps> = (
-  data: Array<any>
-) => ({
+export const requestPhotosList: ActionCreator<Function> = () => (
+  dispatch: any
+) => {
+  FetchApi.get("/api/photos").subscribe((data: any) => {
+    dispatch({
+      type: PHOTOS_ACTIONS.PHOTOS_LIST_REQUSTED
+    });
+
+    if (data.error) {
+      dispatch({
+        type: PHOTOS_ACTIONS.PHOTOS_LIST_ERROR,
+        message: data.error
+      });
+    } else {
+      const { result } = data;
+      clearAllData("posts");
+
+      if (result.length !== 0) {
+        result.forEach((item: any) => writeData("posts", item));
+      }
+
+      dispatch({
+        type: PHOTOS_ACTIONS.PHOTOS_LIST_SUCCESS,
+        data: result
+      });
+    }
+  });
+};
+
+export const saveCachedPhotosList: ActionCreator<
+  IPhotosActionsProps
+> = (data: Array<any>) => ({
   type: PHOTOS_ACTIONS.PHOTOS_LIST_SUCCESS,
-  data
+  data,
+  skipped: 0
 });
+
 export const updateUserSearchQuery: ActionCreator<IPhotosActionsProps> = (
   userQuery: string
 ) => ({

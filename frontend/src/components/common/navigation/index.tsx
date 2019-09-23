@@ -1,6 +1,4 @@
 import React, { memo, FunctionComponent } from "react";
-import { connect } from "react-redux";
-import firebase from "firebase";
 import {
   fade,
   makeStyles,
@@ -93,8 +91,9 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const Navigation: FunctionComponent<IUserDataProps & RouteComponentProps<{}>> = memo(
-  ({ userData, history }) => {
+const Navigation: FunctionComponent<RouteComponentProps<{}>> = memo(
+  ({ history }) => {
+    const JWT = localStorage.getItem("JWT");
     const classes = useStyles();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [
@@ -106,7 +105,7 @@ const Navigation: FunctionComponent<IUserDataProps & RouteComponentProps<{}>> = 
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
     function signOut() {
-      firebase.auth().signOut();
+      localStorage.removeItem("JWT");
       history.push("/");
     }
 
@@ -154,7 +153,7 @@ const Navigation: FunctionComponent<IUserDataProps & RouteComponentProps<{}>> = 
         open={isMobileMenuOpen}
         onClose={handleMobileMenuClose}
       >
-        {userData && (
+        {JWT && (
           <MenuItem>
             <IconButton aria-label="Show 11 new notifications" color="inherit">
               <Badge badgeContent={11} color="secondary">
@@ -164,7 +163,7 @@ const Navigation: FunctionComponent<IUserDataProps & RouteComponentProps<{}>> = 
             <p>Notifications</p>
           </MenuItem>
         )}
-        {userData && (
+        {JWT && (
           <MenuItem onClick={handleProfileMenuOpen}>
             <IconButton
               aria-label="set new avatar"
@@ -177,7 +176,7 @@ const Navigation: FunctionComponent<IUserDataProps & RouteComponentProps<{}>> = 
             <p>Avatar</p>
           </MenuItem>
         )}
-        {userData && (
+        {JWT && (
           <MenuItem>
             <IconButton
               aria-label="Logout"
@@ -192,7 +191,7 @@ const Navigation: FunctionComponent<IUserDataProps & RouteComponentProps<{}>> = 
           </MenuItem>
         )}
 
-        {!userData && (
+        {!JWT && (
           <LinkWrapper href="/login" ariaLabel="go to login or register page">
             <MenuItem>
               <IconButton
@@ -242,7 +241,7 @@ const Navigation: FunctionComponent<IUserDataProps & RouteComponentProps<{}>> = 
             </div>
             <div className={classes.grow} />
             <div className={classes.sectionDesktop}>
-              {userData && (
+              {JWT && (
                 <Tooltip title="Set new avatar">
                   <IconButton
                     edge="end"
@@ -256,7 +255,7 @@ const Navigation: FunctionComponent<IUserDataProps & RouteComponentProps<{}>> = 
                   </IconButton>
                 </Tooltip>
               )}
-              {userData && (
+              {JWT && (
                 <Tooltip title="Notifications">
                   <IconButton
                     aria-label="Show new notifications"
@@ -268,7 +267,7 @@ const Navigation: FunctionComponent<IUserDataProps & RouteComponentProps<{}>> = 
                   </IconButton>
                 </Tooltip>
               )}
-              {userData && (
+              {JWT && (
                 <Tooltip title="Logout">
                   <IconButton
                     aria-label="Logout"
@@ -281,7 +280,7 @@ const Navigation: FunctionComponent<IUserDataProps & RouteComponentProps<{}>> = 
                   </IconButton>
                 </Tooltip>
               )}
-              {!userData && (
+              {!JWT && (
                 <LinkWrapper href="/login" ariaLabel="go to login page">
                   <p>Login / Register</p>
                 </LinkWrapper>
@@ -307,6 +306,4 @@ const Navigation: FunctionComponent<IUserDataProps & RouteComponentProps<{}>> = 
   }
 );
 
-const mapStateToProps = (state: any) => ({ userData: state.user.userData });
-
-export default connect(mapStateToProps)(withRouter(Navigation));
+export default withRouter(Navigation);

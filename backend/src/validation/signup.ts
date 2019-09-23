@@ -28,7 +28,7 @@ module.exports = function validateSignUpInput(data: IUserInput) {
     errors.password = "PASSWORD_TOO_SHORT";
   }
 
-  if (!Validator.isLength(data.password, { max: 100 })) {
+  if (!Validator.isLength(data.password, { max: 50 })) {
     errors.password = "PASSWORD_TOO_LONG";
   }
 

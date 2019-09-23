@@ -57,7 +57,7 @@ const create = function (req, res) {
                         });
                         return user;
                     })
-                        .then((user) => res.json(user))
+                        .then((user) => res.json({ success: true, user }))
                         .catch((err) => res.status(400).json({ error: err.message }));
                 });
             });
@@ -78,6 +78,10 @@ const signIn = function (req, res) {
             errors.email = "EMAIL_NOT_FOUND";
             return res.status(404).json({ errors });
         }
+        if (!user.is_mail_confirmed) {
+            errors.email = "EMAIL_NOT_CONFIRMED";
+            return res.status(400).json({ errors });
+        }
         bcrypt.compare(password, user.password).then((isMatch) => {
             if (isMatch) {
                 // User Matched
@@ -88,12 +92,7 @@ const signIn = function (req, res) {
                     avatar: user.avatar
                 };
                 // Sign token
-                jwt.sign(payload, keys.secretOrKey, { expiresIn: 3600 }, (err, token) => {
-                    res.json({
-                        success: true,
-                        token: "Bearer " + token
-                    });
-                });
+                jwt.sign(payload, keys.secretOrKey, { expiresIn: 3600 }, (err, token) => res.json({ success: true, token: "Bearer " + token }));
             }
             else {
                 errors.password = "PASSWORD_INCORRECT";
@@ -127,7 +126,7 @@ module.exports.activate = activate;
 const get = function (req, res) {
     res.json({
         id: req.user.id,
-        name: req.user.name,
+        userName: req.user.userName,
         email: req.user.email
     });
 };
