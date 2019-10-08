@@ -19,14 +19,14 @@ import MoreVertIcon from "@material-ui/icons/MoreVert";
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     card: {
-      height: "531px",
-      position: "relative"
+      position: "relative",
+      marginBottom: "1.5rem"
     },
     media: {
-      display: 'block',
-      maxWidth: '100%',
-      maxHeight: '330px',
-      margin: 'auto'
+      display: "block",
+      maxWidth: "100%",
+      maxHeight: "330px",
+      margin: "auto"
     },
     expand: {
       transform: "rotate(0deg)",
@@ -49,15 +49,14 @@ export interface IPhotoItemProps {
   created_at: string;
   photo: string;
   description: string;
-  style: any;
+  _id: string;
 }
 
 const PhotoItem: FunctionComponent<IPhotoItemProps> = ({
   author,
   created_at,
   photo,
-  description,
-  style
+  description
 }) => {
   const classes = useStyles();
   const [expanded, setExpanded] = React.useState(false);
@@ -67,61 +66,55 @@ const PhotoItem: FunctionComponent<IPhotoItemProps> = ({
   }
 
   return (
-    <div style={style}>
-      <Card className={classes.card}>
-        <CardHeader
-          avatar={
-            <Avatar
-              aria-label={`${author}'s avatar`}
-              className={classes.avatar}
-            >
-              {author.substr(0, 1).toUpperCase()}
-            </Avatar>
-          }
-          action={
-            <IconButton aria-label="settings">
-              <MoreVertIcon />
-            </IconButton>
-          }
-          title={author}
-          subheader={created_at}
-        />
-        <img
-          className={classes.media}
-          src={photo}
-          alt={`${author}'s photo`}
-          title={`${author}'s photo`}
-        />
-        <CardContent>
-          <Typography variant="body2" color="textSecondary" component="p">
-            <span>
-              {description}
-            </span>
-          </Typography>
-        </CardContent>
-        <CardActions disableSpacing>
-          <IconButton aria-label="add to favorites">
-            <FavoriteIcon />
-          </IconButton>
-          <IconButton aria-label="share">
-            <ShareIcon />
-          </IconButton>
-          <IconButton
-            className={clsx(classes.expand, {
-              [classes.expandOpen]: expanded
-            })}
-            onClick={handleExpandClick}
-            aria-expanded={expanded}
-            aria-label="show more"
-          >
-            <ExpandMoreIcon />
-          </IconButton>
-        </CardActions>
-        <Collapse in={expanded} timeout="auto" unmountOnExit>
-          <CardContent>Show comments</CardContent>
-        </Collapse>
-      </Card>
-    </div>
+    <Card className={classes.card}>
+      <CardHeader
+        avatar={
+          <Avatar aria-label={`${author}'s avatar`} className={classes.avatar}>
+            {author.substr(0, 1).toUpperCase()}
+          </Avatar>
+        }
+        // action={
+        //   <IconButton aria-label="settings">
+        //     <MoreVertIcon />
+        //   </IconButton>
+        // }
+        title={author}
+        subheader={created_at}
+      />
+      <img
+        className={classes.media}
+        src={photo}
+        alt={`${author}'s photo`}
+        title={`${author}'s photo`}
+      />
+      <CardContent>
+        <Typography variant="body2" color="textSecondary" component="p">
+          <span>{description}</span>
+        </Typography>
+      </CardContent>
+      <CardActions disableSpacing>
+        <IconButton aria-label="add to favorites">
+          <FavoriteIcon />
+        </IconButton>
+        <IconButton aria-label="share">
+          <ShareIcon />
+        </IconButton>
+        <span>Show comments (6)</span>
+        <IconButton
+          className={clsx(classes.expand, {
+            [classes.expandOpen]: expanded
+          })}
+          onClick={handleExpandClick}
+          aria-expanded={expanded}
+          aria-label="show more"
+        >
+          <ExpandMoreIcon />
+        </IconButton>
+      </CardActions>
+      <Collapse in={expanded} timeout="auto" unmountOnExit>
+        <CardContent>Dupa :)</CardContent>
+      </Collapse>
+    </Card>
   );
 };
 

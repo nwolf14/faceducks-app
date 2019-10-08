@@ -14,7 +14,6 @@ export const getUser: ActionCreator<Function> = (token: string) => (
   dispatch: any
 ) => {
   FetchApi.get("/api/users/current", token).subscribe((data: any) => {
-    console.log('user data:', data)
     if (!data || data.errors) return;
 
     dispatch({

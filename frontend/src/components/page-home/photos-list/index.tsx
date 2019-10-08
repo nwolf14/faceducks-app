@@ -1,23 +1,20 @@
-import React, {
-  memo,
-  FunctionComponent,
-  useEffect,
-  useCallback,
-  useRef
-} from "react";
-import { List, AutoSizer } from "react-virtualized";
+import React, { memo, FunctionComponent, useEffect, useCallback } from "react";
+import InfiniteScroll from "react-infinite-scroller";
 import { connect } from "react-redux";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
+import CircularProgress from "@material-ui/core/CircularProgress";
 
-import { readAllData } from "../../../lib/utility";
+import { readAllData, clearAllData, writeData } from "../../../lib/utility";
 import { photosListSelector } from "../../../redux/selectors/photos";
 import PhotoItem, { IPhotoItemProps } from "./photo-item";
 import { Spinner } from "../../";
- import {
+import {
   saveCachedPhotosList,
   requestPhotosList
 } from "../../../redux/actions/photos";
 import { Grid } from "@material-ui/core";
+import { generateUniqueKey } from "../../../lib/functions";
+import './styles.scss';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -33,6 +30,7 @@ const useStyles = makeStyles((theme: Theme) =>
 const PhotosList: FunctionComponent<{
   photosList: Array<IPhotoItemProps>;
   offset: number;
+  hasMorePhotos: boolean;
   error: string;
   isLoading: boolean;
   offline: boolean;
@@ -44,25 +42,12 @@ const PhotosList: FunctionComponent<{
     error,
     isLoading,
     offset,
+    hasMorePhotos,
     offline,
     savePhotosList,
     requestPhotosList
   }) => {
     const classes = useStyles();
-    const isMounted = useRef(false);
-    const rowRenderer = useCallback(
-      ({ index, style, key }: { index: number; style: any, key: string }) => {
-        return (
-          <PhotoItem
-            {...photosList[index]}
-            key={key}
-            style={style}
-          />
-        );
-      },
-      [photosList]
-    );
-
     const getPhotosListFromDb = useCallback(() => {
       if (!offline) {
         requestPhotosList(offset);
@@ -70,18 +55,12 @@ const PhotosList: FunctionComponent<{
         const cachedPosts = readAllData("posts");
         cachedPosts.then(data => savePhotosList(data));
       }
-    }, [savePhotosList, requestPhotosList]);
+    }, [savePhotosList, requestPhotosList, offset]);
 
     useEffect(() => {
-      if (!isMounted.current) {
-        isMounted.current = true;
-
-        if (photosList.length === 0) {
-          getPhotosListFromDb();
-        }
-      }
-      return () => {};
-    }, [photosList, isMounted, getPhotosListFromDb, requestPhotosList]);
+      clearAllData("posts");
+      photosList.forEach((photo: any) => writeData("posts", photo));
+    }, [photosList]);
 
     if (isLoading) {
       return <Spinner size={30} />;
@@ -94,22 +73,15 @@ const PhotosList: FunctionComponent<{
       <div className={`photo-list`} aria-live="polite">
         <Grid container className={classes.root}>
           <Grid item xs={12} sm={8} md={6}>
-            <div style={{ height: window.innerHeight - 90 + "px" }}>
-              <AutoSizer>
-                {({ width, height }) => {
-                  return (
-                    <List
-                      width={width}
-                      height={height}
-                      rowCount={photosList.length}
-                      rowHeight={531}
-                      rowRenderer={rowRenderer}
-                      overscanRowCount={5}
-                    />
-                  );
-                }}
-              </AutoSizer>
-            </div>
+            <InfiniteScroll
+              loader={Loader}
+              hasMore={hasMorePhotos}
+              loadMore={getPhotosListFromDb}
+            >
+              {photosList.map(photo => (
+                <PhotoItem {...photo} key={photo._id} />
+              ))}
+            </InfiniteScroll>
           </Grid>
         </Grid>
       </div>
@@ -127,8 +99,15 @@ const mapStateToProps = (state: any) => ({
   isLoading: state.photos.isPhotosListLoading,
   error: state.photos.photosListError,
   offset: state.photos.photosListOffset,
+  hasMorePhotos: state.photos.hasMorePhotos,
   offline: state.common.offline
 });
+
+const Loader = (
+  <div key={generateUniqueKey()} className='photos-list-loader'>
+    <CircularProgress size={30} />
+  </div>
+);
 
 export default connect(
   mapStateToProps,

@@ -8,6 +8,7 @@ export interface IPhotosReducerState {
   photosListError: string;
   searchByUser: string;
   photosListOffset: number;
+  hasMorePhotos: boolean;
 }
 
 const defaultState: IPhotosReducerState = {
@@ -15,7 +16,8 @@ const defaultState: IPhotosReducerState = {
   isPhotosListLoading: false,
   photosListError: "",
   searchByUser: "",
-  photosListOffset: 0
+  photosListOffset: 0,
+  hasMorePhotos: true
 };
 
 export const photos: Reducer<any, IPhotosActionsProps> = (state = defaultState, action) => {
@@ -36,10 +38,11 @@ export const photos: Reducer<any, IPhotosActionsProps> = (state = defaultState, 
       })
     case PHOTOS_ACTIONS.PHOTOS_LIST_SUCCESS:
       return Object.assign({}, state, {
-        photosList: action.data,
+        photosList: state.photosList.concat(action.data),
         isPhotosListLoading: false,
         photosListError: '',
-        photosListOffset: typeof action.offset === "number"  ? (action.offset + SKIP_PHOTOS_DOCUMENTS) : state.photosListOffset
+        photosListOffset: typeof action.offset === "number"  ? (action.offset + SKIP_PHOTOS_DOCUMENTS) : state.photosListOffset,
+        hasMorePhotos: (action.data && action.data.length === 0) ? false: true
       })
     case PHOTOS_ACTIONS.USER_QUERY_UPDATED:
       return Object.assign({}, state, {

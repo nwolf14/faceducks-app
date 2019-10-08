@@ -34,10 +34,7 @@ export const requestPhotosList: ActionCreator<Function> = (
     } else {
       const { result } = data;
 
-      if (result && result.length !== 0) {
-        clearAllData("posts");
-        result.forEach((item: any) => writeData("posts", item));
-
+      if (result) {
         dispatch({
           type: PHOTOS_ACTIONS.PHOTOS_LIST_SUCCESS,
           data: result,

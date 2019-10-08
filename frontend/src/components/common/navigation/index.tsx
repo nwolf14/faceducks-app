@@ -33,7 +33,10 @@ const useStyles = makeStyles((theme: Theme) =>
       zIndex: 100
     },
     menuButton: {
-      marginRight: theme.spacing(2)
+      marginRight: theme.spacing(2),
+      [theme.breakpoints.up("sm")]: {
+        display: "none"
+      }
     },
     title: {
       display: "none",
@@ -78,7 +81,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     sectionDesktop: {
       display: "none",
-      [theme.breakpoints.up("md")]: {
+      [theme.breakpoints.up("sm")]: {
         display: "flex"
       }
     },
@@ -218,6 +221,7 @@ const Navigation: FunctionComponent<RouteComponentProps<{}>> = memo(
               className={classes.menuButton}
               color="inherit"
               aria-label="Open drawer"
+              onClick={handleMobileMenuOpen}
             >
               <MenuIcon />
             </IconButton>
@@ -285,17 +289,6 @@ const Navigation: FunctionComponent<RouteComponentProps<{}>> = memo(
                   <p>Login / Register</p>
                 </LinkWrapper>
               )}
-            </div>
-            <div className={classes.sectionMobile}>
-              <IconButton
-                aria-label="Show more"
-                aria-controls={mobileMenuId}
-                aria-haspopup="true"
-                onClick={handleMobileMenuOpen}
-                color="inherit"
-              >
-                <MoreIcon />
-              </IconButton>
             </div>
           </Toolbar>
         </AppBar>
