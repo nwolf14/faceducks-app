@@ -11,7 +11,7 @@ import { FormValidator } from "../services";
 
 export function validateForm({ event, form, formNode }: IFormWithEvent) {
   event.preventDefault();
-
+  
   const validatedForm = FormValidator.validateForm(form);
   const inputsWithErrors = _.filter(validatedForm, input => !input.isValid);
 

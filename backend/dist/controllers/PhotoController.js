@@ -26,7 +26,7 @@ const get = function (req, res) {
     if (author) {
         filter.author = new RegExp(`/${author}/`);
     }
-    Photo.find(filter, null, { skip, limit, sort })
+    Photo.find(filter, null, { skip: Number(skip), limit: Number(limit), sort })
         .then((photos) => res.json({ result: photos }))
         .catch((err) => res.status(500).json({ error: err.message }));
 };

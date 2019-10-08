@@ -32,6 +32,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const PhotosList: FunctionComponent<{
   photosList: Array<IPhotoItemProps>;
+  offset: number;
   error: string;
   isLoading: boolean;
   offline: boolean;
@@ -42,6 +43,7 @@ const PhotosList: FunctionComponent<{
     photosList,
     error,
     isLoading,
+    offset,
     offline,
     savePhotosList,
     requestPhotosList
@@ -55,7 +57,6 @@ const PhotosList: FunctionComponent<{
             {...photosList[index]}
             key={key}
             style={style}
-            index={index}
           />
         );
       },
@@ -64,7 +65,7 @@ const PhotosList: FunctionComponent<{
 
     const getPhotosListFromDb = useCallback(() => {
       if (!offline) {
-        requestPhotosList();
+        requestPhotosList(offset);
       } else {
         const cachedPosts = readAllData("posts");
         cachedPosts.then(data => savePhotosList(data));
@@ -118,13 +119,14 @@ const PhotosList: FunctionComponent<{
 
 const mapDispatchToProps = (dispatch: any) => ({
   savePhotosList: (data: Array<any>) => dispatch(saveCachedPhotosList(data)),
-  requestPhotosList: () => dispatch(requestPhotosList())
+  requestPhotosList: (offset: number) => dispatch(requestPhotosList(offset))
 });
 
 const mapStateToProps = (state: any) => ({
   photosList: photosListSelector(state),
   isLoading: state.photos.isPhotosListLoading,
   error: state.photos.photosListError,
+  offset: state.photos.photosListOffset,
   offline: state.common.offline
 });
 

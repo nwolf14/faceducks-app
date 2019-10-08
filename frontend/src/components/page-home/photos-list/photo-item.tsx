@@ -49,7 +49,6 @@ export interface IPhotoItemProps {
   created_at: string;
   photo: string;
   description: string;
-  index: number;
   style: any;
 }
 
@@ -58,7 +57,6 @@ const PhotoItem: FunctionComponent<IPhotoItemProps> = ({
   created_at,
   photo,
   description,
-  index,
   style
 }) => {
   const classes = useStyles();
@@ -97,7 +95,7 @@ const PhotoItem: FunctionComponent<IPhotoItemProps> = ({
         <CardContent>
           <Typography variant="body2" color="textSecondary" component="p">
             <span>
-              {index} {description}
+              {description}
             </span>
           </Typography>
         </CardContent>

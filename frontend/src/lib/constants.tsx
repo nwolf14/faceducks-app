@@ -22,7 +22,7 @@ export const INPUT_TYPES_NAMES: IInputTypes = {
   REPEAT_PASSWORD: "repeatPassword",
   RECAPTCHA: "recaptcha",
   GDPR_AGREEMENT: "is_gdpr_accepted",
-  PHOTO_DESCRIPTION: "photoDescription",
+  PHOTO_DESCRIPTION: "description",
   PHOTO_KEYWORDS: "hashtagsList"
 };
 

@@ -7,7 +7,7 @@ export interface IPhotosReducerState {
   isPhotosListLoading: boolean;
   photosListError: string;
   searchByUser: string;
-  skipped: number;
+  photosListOffset: number;
 }
 
 const defaultState: IPhotosReducerState = {
@@ -15,7 +15,7 @@ const defaultState: IPhotosReducerState = {
   isPhotosListLoading: false,
   photosListError: "",
   searchByUser: "",
-  skipped: 0
+  photosListOffset: 0
 };
 
 export const photos: Reducer<any, IPhotosActionsProps> = (state = defaultState, action) => {
@@ -39,12 +39,12 @@ export const photos: Reducer<any, IPhotosActionsProps> = (state = defaultState, 
         photosList: action.data,
         isPhotosListLoading: false,
         photosListError: '',
-        skipped: state.skipped + SKIP_PHOTOS_DOCUMENTS
+        photosListOffset: typeof action.offset === "number"  ? (action.offset + SKIP_PHOTOS_DOCUMENTS) : state.photosListOffset
       })
     case PHOTOS_ACTIONS.USER_QUERY_UPDATED:
       return Object.assign({}, state, {
         photosList: [],
-        skipped: 0,
+        photosListOffset: 0,
         searchByUser: action.userQuery
       })
 

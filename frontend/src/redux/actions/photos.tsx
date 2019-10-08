@@ -12,16 +12,16 @@ export const PHOTOS_ACTIONS = {
 
 export interface IPhotosActionsProps {
   type: string;
-  skipped?: number;
+  offset?: number;
   message?: string;
   userQuery?: string;
   data?: Array<any>;
 }
 
-export const requestPhotosList: ActionCreator<Function> = () => (
-  dispatch: any
-) => {
-  FetchApi.get("/api/photos").subscribe((data: any) => {
+export const requestPhotosList: ActionCreator<Function> = (
+  offset: number = 0
+) => (dispatch: any) => {
+  FetchApi.get(`/api/photos?limit=2&skip=${offset}`).subscribe((data: any) => {
     dispatch({
       type: PHOTOS_ACTIONS.PHOTOS_LIST_REQUSTED
     });
@@ -33,26 +33,31 @@ export const requestPhotosList: ActionCreator<Function> = () => (
       });
     } else {
       const { result } = data;
-      clearAllData("posts");
 
-      if (result.length !== 0) {
+      if (result && result.length !== 0) {
+        clearAllData("posts");
         result.forEach((item: any) => writeData("posts", item));
-      }
 
-      dispatch({
-        type: PHOTOS_ACTIONS.PHOTOS_LIST_SUCCESS,
-        data: result
-      });
+        dispatch({
+          type: PHOTOS_ACTIONS.PHOTOS_LIST_SUCCESS,
+          data: result,
+          offset
+        });
+      } else {
+        dispatch({
+          type: PHOTOS_ACTIONS.PHOTOS_LIST_ERROR,
+          message: 'Error occured'
+        });
+      }
     }
   });
 };
 
-export const saveCachedPhotosList: ActionCreator<
-  IPhotosActionsProps
-> = (data: Array<any>) => ({
+export const saveCachedPhotosList: ActionCreator<IPhotosActionsProps> = (
+  data: Array<any>
+) => ({
   type: PHOTOS_ACTIONS.PHOTOS_LIST_SUCCESS,
-  data,
-  skipped: 0
+  data
 });
 
 export const updateUserSearchQuery: ActionCreator<IPhotosActionsProps> = (
