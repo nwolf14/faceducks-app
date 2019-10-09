@@ -19,12 +19,13 @@ import AccountCircle from "@material-ui/icons/AccountCircle";
 import NotificationsIcon from "@material-ui/icons/Notifications";
 import PowerSettingsNew from "@material-ui/icons/PowerSettingsNew";
 import ArrowRightAlt from "@material-ui/icons/ArrowRightAlt";
-import MoreIcon from "@material-ui/icons/MoreVert";
 import { LinkWrapper } from "../../_HOCs";
 import "./styles.scss";
-import { IUserDataProps } from "../../../interfaces";
 import { withRouter, RouteComponentProps } from "react-router";
 import { Tooltip } from "@material-ui/core";
+import { connect } from "react-redux";
+import { userData } from "../../../interfaces";
+import { logoutUser } from "../../../redux/actions/users";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -94,209 +95,216 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const Navigation: FunctionComponent<RouteComponentProps<{}>> = memo(
-  ({ history }) => {
-    const JWT = localStorage.getItem("JWT");
-    const classes = useStyles();
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-    const [
-      mobileMoreAnchorEl,
-      setMobileMoreAnchorEl
-    ] = React.useState<null | HTMLElement>(null);
+const Navigation: FunctionComponent<
+  { userData: userData; logout: Function } & RouteComponentProps<{}>
+> = memo(({ history, logout, userData }) => {
+  const classes = useStyles();
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [
+    mobileMoreAnchorEl,
+    setMobileMoreAnchorEl
+  ] = React.useState<null | HTMLElement>(null);
 
-    const isMenuOpen = Boolean(anchorEl);
-    const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+  const isMenuOpen = Boolean(anchorEl);
+  const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
-    function signOut() {
-      localStorage.removeItem("JWT");
-      history.push("/");
-    }
+  function signOut() {
+    localStorage.removeItem("JWT");
+    logout();
+    history.push("/");
+  }
 
-    function handleProfileMenuOpen(event: React.MouseEvent<HTMLElement>) {
-      setAnchorEl(event.currentTarget);
-    }
+  function handleProfileMenuOpen(event: React.MouseEvent<HTMLElement>) {
+    setAnchorEl(event.currentTarget);
+  }
 
-    function handleMobileMenuClose() {
-      setMobileMoreAnchorEl(null);
-    }
+  function handleMobileMenuClose() {
+    setMobileMoreAnchorEl(null);
+  }
 
-    function handleMenuClose() {
-      setAnchorEl(null);
-      handleMobileMenuClose();
-    }
+  function handleMenuClose() {
+    setAnchorEl(null);
+    handleMobileMenuClose();
+  }
 
-    function handleMobileMenuOpen(event: React.MouseEvent<HTMLElement>) {
-      setMobileMoreAnchorEl(event.currentTarget);
-    }
+  function handleMobileMenuOpen(event: React.MouseEvent<HTMLElement>) {
+    setMobileMoreAnchorEl(event.currentTarget);
+  }
 
-    const menuId = "primary-search-account-menu";
-    const renderMenu = (
-      <Menu
-        anchorEl={anchorEl}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        id={menuId}
-        keepMounted
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
-        open={isMenuOpen}
-        onClose={handleMenuClose}
-      >
-        <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-        <MenuItem onClick={handleMenuClose}>My account</MenuItem>
-      </Menu>
-    );
+  const menuId = "primary-search-account-menu";
+  const renderMenu = (
+    <Menu
+      anchorEl={anchorEl}
+      anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      id={menuId}
+      keepMounted
+      transformOrigin={{ vertical: "top", horizontal: "right" }}
+      open={isMenuOpen}
+      onClose={handleMenuClose}
+    >
+      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
+      <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+    </Menu>
+  );
 
-    const mobileMenuId = "primary-search-account-menu-mobile";
-    const renderMobileMenu = (
-      <Menu
-        anchorEl={mobileMoreAnchorEl}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        id={mobileMenuId}
-        keepMounted
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
-        open={isMobileMenuOpen}
-        onClose={handleMobileMenuClose}
-      >
-        {JWT && (
+  const mobileMenuId = "primary-search-account-menu-mobile";
+  const renderMobileMenu = (
+    <Menu
+      anchorEl={mobileMoreAnchorEl}
+      anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      id={mobileMenuId}
+      keepMounted
+      transformOrigin={{ vertical: "top", horizontal: "right" }}
+      open={isMobileMenuOpen}
+      onClose={handleMobileMenuClose}
+    >
+      {userData && (
+        <MenuItem>
+          <IconButton aria-label="Show 11 new notifications" color="inherit">
+            <Badge badgeContent={11} color="secondary">
+              <NotificationsIcon />
+            </Badge>
+          </IconButton>
+          <p>Notifications</p>
+        </MenuItem>
+      )}
+      {userData && (
+        <MenuItem onClick={handleProfileMenuOpen}>
+          <IconButton
+            aria-label="set new avatar"
+            aria-controls="primary-search-account-menu"
+            aria-haspopup="true"
+            color="inherit"
+          >
+            <AccountCircle />
+          </IconButton>
+          <p>Avatar</p>
+        </MenuItem>
+      )}
+      {userData && (
+        <MenuItem onClick={signOut}>
+          <IconButton
+            aria-label="Logout"
+            color="inherit"
+            aria-controls={menuId}
+            aria-haspopup="true"
+          >
+            <PowerSettingsNew />
+          </IconButton>
+          <p>Logout</p>
+        </MenuItem>
+      )}
+
+      {!userData && (
+        <LinkWrapper href="/login" ariaLabel="go to login or register page">
           <MenuItem>
-            <IconButton aria-label="Show 11 new notifications" color="inherit">
-              <Badge badgeContent={11} color="secondary">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
-            <p>Notifications</p>
-          </MenuItem>
-        )}
-        {JWT && (
-          <MenuItem onClick={handleProfileMenuOpen}>
             <IconButton
-              aria-label="set new avatar"
-              aria-controls="primary-search-account-menu"
-              aria-haspopup="true"
-              color="inherit"
-            >
-              <AccountCircle />
-            </IconButton>
-            <p>Avatar</p>
-          </MenuItem>
-        )}
-        {JWT && (
-          <MenuItem>
-            <IconButton
-              aria-label="Logout"
+              aria-label="Register / login"
               color="inherit"
               aria-controls={menuId}
               aria-haspopup="true"
-              onClick={signOut}
             >
-              <PowerSettingsNew />
+              <ArrowRightAlt />
             </IconButton>
-            <p>Logout</p>
+            <p>Login / Register</p>
           </MenuItem>
-        )}
+        </LinkWrapper>
+      )}
+    </Menu>
+  );
 
-        {!JWT && (
-          <LinkWrapper href="/login" ariaLabel="go to login or register page">
-            <MenuItem>
-              <IconButton
-                aria-label="Register / login"
-                color="inherit"
-                aria-controls={menuId}
-                aria-haspopup="true"
-              >
-                <ArrowRightAlt />
-              </IconButton>
-              <p>Login / Register</p>
-            </MenuItem>
-          </LinkWrapper>
-        )}
-      </Menu>
-    );
-
-    return (
-      <div className={classes.grow}>
-        <AppBar position="static">
-          <Toolbar>
-            <IconButton
-              edge="start"
-              className={classes.menuButton}
-              color="inherit"
-              aria-label="Open drawer"
-              onClick={handleMobileMenuOpen}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography className={classes.title} variant="h6" noWrap>
-              <LinkWrapper href="/" ariaLabel="go to home page">
-                face-ducks.com
+  return (
+    <div className={classes.grow}>
+      <AppBar position="static">
+        <Toolbar>
+          <IconButton
+            edge="start"
+            className={classes.menuButton}
+            color="inherit"
+            aria-label="Open drawer"
+            onClick={handleMobileMenuOpen}
+          >
+            <MenuIcon />
+          </IconButton>
+          <Typography className={classes.title} variant="h6" noWrap>
+            <LinkWrapper href="/" ariaLabel="go to home page">
+              face-ducks.com
+            </LinkWrapper>
+          </Typography>
+          <div className={classes.search}>
+            <div className={classes.searchIcon}>
+              <SearchIcon />
+            </div>
+            <InputBase
+              placeholder="Search the board…"
+              classes={{
+                root: classes.inputRoot,
+                input: classes.inputInput
+              }}
+              inputProps={{ "aria-label": "Search" }}
+            />
+          </div>
+          <div className={classes.grow} />
+          <div className={classes.sectionDesktop}>
+            {userData && (
+              <Tooltip title="Set new avatar">
+                <IconButton
+                  edge="end"
+                  aria-label="set new avatar"
+                  aria-controls={menuId}
+                  aria-haspopup="true"
+                  onClick={handleProfileMenuOpen}
+                  color="inherit"
+                >
+                  <AccountCircle />
+                </IconButton>
+              </Tooltip>
+            )}
+            {userData && (
+              <Tooltip title="Notifications">
+                <IconButton aria-label="Show new notifications" color="inherit">
+                  <Badge badgeContent={17} color="secondary">
+                    <NotificationsIcon />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
+            )}
+            {userData && (
+              <Tooltip title="Logout">
+                <IconButton
+                  aria-label="Logout"
+                  color="inherit"
+                  aria-controls={menuId}
+                  aria-haspopup="true"
+                  onClick={signOut}
+                >
+                  <PowerSettingsNew />
+                </IconButton>
+              </Tooltip>
+            )}
+            {!userData && (
+              <LinkWrapper href="/login" ariaLabel="go to login page">
+                <p>Login / Register</p>
               </LinkWrapper>
-            </Typography>
-            <div className={classes.search}>
-              <div className={classes.searchIcon}>
-                <SearchIcon />
-              </div>
-              <InputBase
-                placeholder="Search the board…"
-                classes={{
-                  root: classes.inputRoot,
-                  input: classes.inputInput
-                }}
-                inputProps={{ "aria-label": "Search" }}
-              />
-            </div>
-            <div className={classes.grow} />
-            <div className={classes.sectionDesktop}>
-              {JWT && (
-                <Tooltip title="Set new avatar">
-                  <IconButton
-                    edge="end"
-                    aria-label="set new avatar"
-                    aria-controls={menuId}
-                    aria-haspopup="true"
-                    onClick={handleProfileMenuOpen}
-                    color="inherit"
-                  >
-                    <AccountCircle />
-                  </IconButton>
-                </Tooltip>
-              )}
-              {JWT && (
-                <Tooltip title="Notifications">
-                  <IconButton
-                    aria-label="Show new notifications"
-                    color="inherit"
-                  >
-                    <Badge badgeContent={17} color="secondary">
-                      <NotificationsIcon />
-                    </Badge>
-                  </IconButton>
-                </Tooltip>
-              )}
-              {JWT && (
-                <Tooltip title="Logout">
-                  <IconButton
-                    aria-label="Logout"
-                    color="inherit"
-                    aria-controls={menuId}
-                    aria-haspopup="true"
-                    onClick={signOut}
-                  >
-                    <PowerSettingsNew />
-                  </IconButton>
-                </Tooltip>
-              )}
-              {!JWT && (
-                <LinkWrapper href="/login" ariaLabel="go to login page">
-                  <p>Login / Register</p>
-                </LinkWrapper>
-              )}
-            </div>
-          </Toolbar>
-        </AppBar>
-        {renderMobileMenu}
-        {renderMenu}
-      </div>
-    );
-  }
-);
+            )}
+          </div>
+        </Toolbar>
+      </AppBar>
+      {renderMobileMenu}
+      {renderMenu}
+    </div>
+  );
+});
 
-export default withRouter(Navigation);
+function mapStateToProps(state: any) {
+  return { userData: state.user.userData };
+}
+
+function mapDispatchToProps(dispatch: any) {
+  return { logout: () => dispatch(logoutUser()) };
+}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withRouter(Navigation));

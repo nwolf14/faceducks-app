@@ -1,6 +1,5 @@
 import { ActionCreator } from "redux";
 import { FetchApi } from "../../services";
-import { clearAllData, writeData } from "../../lib/utility";
 
 export const PHOTOS_ACTIONS = {
   PHOTOS_LIST_ERROR: "PHOTOS_LIST_ERROR",

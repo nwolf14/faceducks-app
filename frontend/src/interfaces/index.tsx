@@ -65,3 +65,11 @@ export interface IFormWithEvent {
   form: IForm;
   formNode: RefObject<HTMLFormElement>;
 }
+
+export interface IUserData {
+  userName: string;
+  id: string;
+  email: string;
+}
+
+export type userData = null | IUserData;

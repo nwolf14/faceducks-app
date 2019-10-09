@@ -70,3 +70,5 @@ export const API_ERRORS: IObjectOfStrings = {
   PHOTO_REQUIRED: "Photo is required",
   HASHTAGS_REQUIRED: "Hashtags list required",
 };
+
+export const ERROR_CODES = [400, 401, 404, 500, 503];

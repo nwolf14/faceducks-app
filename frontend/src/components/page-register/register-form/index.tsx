@@ -3,7 +3,6 @@ import ReactDOM from "react-dom";
 import { Subject, of } from "rxjs";
 import { concatMap, map, catchError } from "rxjs/operators";
 import { withRouter, RouteComponentProps } from "react-router";
-import _ from "lodash";
 import { Button } from "@material-ui/core";
 
 import { FormInputsCreator } from "../..";
