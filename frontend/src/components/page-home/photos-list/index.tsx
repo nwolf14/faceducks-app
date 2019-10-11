@@ -7,10 +7,9 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import { readAllData, clearAllData, writeData } from "../../../lib/utility";
 import { photosListSelector } from "../../../redux/selectors/photos";
 import PhotoItem, { IPhotoItemProps } from "./photo-item";
-import { Spinner } from "../../";
 import {
   saveCachedPhotosList,
-  requestPhotosList
+  getPhotosList
 } from "../../../redux/actions/photos";
 import { Grid } from "@material-ui/core";
 import { generateUniqueKey } from "../../../lib/functions";
@@ -32,39 +31,39 @@ const PhotosList: FunctionComponent<{
   offset: number;
   hasMorePhotos: boolean;
   error: string;
-  isLoading: boolean;
   offline: boolean;
+  authorFilter: string;
   savePhotosList: Function;
-  requestPhotosList: Function;
+  getPhotosList: Function;
 }> = memo(
   ({
     photosList,
     error,
-    isLoading,
     offset,
     hasMorePhotos,
     offline,
+    authorFilter,
     savePhotosList,
-    requestPhotosList
+    getPhotosList
   }) => {
     const classes = useStyles();
     const getPhotosListFromDb = useCallback(() => {
       if (!offline) {
-        requestPhotosList(offset);
+        getPhotosList(offset, authorFilter);
       } else {
         const cachedPosts = readAllData("posts");
         cachedPosts.then(data => savePhotosList(data));
       }
-    }, [savePhotosList, requestPhotosList, offset]);
+    }, [savePhotosList, getPhotosList, offset, authorFilter]);
+
+    useEffect(() => {
+      getPhotosListFromDb();
+    }, [authorFilter])
 
     useEffect(() => {
       clearAllData("posts");
       photosList.forEach((photo: any) => writeData("posts", photo));
     }, [photosList]);
-
-    if (isLoading) {
-      return <Spinner size={30} />;
-    }
 
     if (error) {
     }
@@ -74,6 +73,7 @@ const PhotosList: FunctionComponent<{
         <Grid container className={classes.root}>
           <Grid item xs={12} sm={8} md={6}>
             <InfiniteScroll
+              initialLoad={false}
               loader={Loader}
               hasMore={hasMorePhotos}
               loadMore={getPhotosListFromDb}
@@ -91,14 +91,14 @@ const PhotosList: FunctionComponent<{
 
 const mapDispatchToProps = (dispatch: any) => ({
   savePhotosList: (data: Array<any>) => dispatch(saveCachedPhotosList(data)),
-  requestPhotosList: (offset: number) => dispatch(requestPhotosList(offset))
+  getPhotosList: (offset: number, authorFilter: string) => dispatch(getPhotosList(offset, authorFilter))
 });
 
 const mapStateToProps = (state: any) => ({
   photosList: photosListSelector(state),
-  isLoading: state.photos.isPhotosListLoading,
   error: state.photos.photosListError,
   offset: state.photos.photosListOffset,
+  authorFilter: state.photos.photosListAuthorFilter,
   hasMorePhotos: state.photos.hasMorePhotos,
   offline: state.common.offline
 });

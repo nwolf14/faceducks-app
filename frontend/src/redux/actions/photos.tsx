@@ -6,44 +6,37 @@ export const PHOTOS_ACTIONS = {
   PHOTOS_LIST_CACHED: "PHOTOS_ACTIONS.PHOTOS_LIST_CACHED",
   PHOTOS_LIST_SUCCESS: "PHOTOS_LIST_SUCCESS",
   PHOTOS_LIST_REQUSTED: "PHOTOS_LIST_REQUSTED",
-  USER_QUERY_UPDATED: "USER_QUERY_UPDATED"
+  UPDATE_PHOTOS_LIST_AUTHOR_FILTER: "UPDATE_PHOTOS_LIST_AUTHOR_FILTER"
 };
 
 export interface IPhotosActionsProps {
   type: string;
   offset?: number;
   message?: string;
-  userQuery?: string;
+  authorFilter?: string;
   data?: Array<any>;
 }
 
-export const requestPhotosList: ActionCreator<Function> = (
-  offset: number = 0
+export const getPhotosList: ActionCreator<Function> = (
+  offset: number = 0,
+  authorFilter: string = ""
 ) => (dispatch: any) => {
-  FetchApi.get(`/api/photos?limit=2&skip=${offset}`).subscribe((data: any) => {
-    dispatch({
-      type: PHOTOS_ACTIONS.PHOTOS_LIST_REQUSTED
-    });
+  dispatch(requestPhotosList());
 
+  FetchApi.get(
+    `/api/photos?limit=2&skip=${offset}${
+      authorFilter ? `&author=${authorFilter}` : ""
+    }`
+  ).subscribe((data: any) => {
     if (data.error) {
-      dispatch({
-        type: PHOTOS_ACTIONS.PHOTOS_LIST_ERROR,
-        message: data.error
-      });
+      dispatch(photosListError(data.error));
     } else {
       const { result } = data;
 
       if (result) {
-        dispatch({
-          type: PHOTOS_ACTIONS.PHOTOS_LIST_SUCCESS,
-          data: result,
-          offset
-        });
+        dispatch(savePhotosList(result, offset, authorFilter));
       } else {
-        dispatch({
-          type: PHOTOS_ACTIONS.PHOTOS_LIST_ERROR,
-          message: 'Error occured'
-        });
+        dispatch(photosListError("Error occured"));
       }
     }
   });
@@ -51,14 +44,37 @@ export const requestPhotosList: ActionCreator<Function> = (
 
 export const saveCachedPhotosList: ActionCreator<IPhotosActionsProps> = (
   data: Array<any>
-) => ({
-  type: PHOTOS_ACTIONS.PHOTOS_LIST_SUCCESS,
-  data
+) => savePhotosList(data);
+
+export const updatePhotosListAuthorFilter: ActionCreator<
+  IPhotosActionsProps
+> = (authorFilter: string) => ({
+  type: PHOTOS_ACTIONS.UPDATE_PHOTOS_LIST_AUTHOR_FILTER,
+  authorFilter
 });
 
-export const updateUserSearchQuery: ActionCreator<IPhotosActionsProps> = (
-  userQuery: string
-) => ({
-  type: PHOTOS_ACTIONS.USER_QUERY_UPDATED,
-  userQuery
-});
+function requestPhotosList() {
+  return {
+    type: PHOTOS_ACTIONS.PHOTOS_LIST_REQUSTED
+  };
+}
+
+function photosListError(message: string) {
+  return {
+    type: PHOTOS_ACTIONS.PHOTOS_LIST_ERROR,
+    message
+  };
+}
+
+function savePhotosList(
+  data: Array<any>,
+  offset?: number,
+  authorFilter?: string
+) {
+  return {
+    type: PHOTOS_ACTIONS.PHOTOS_LIST_SUCCESS,
+    data,
+    offset,
+    authorFilter
+  };
+}
