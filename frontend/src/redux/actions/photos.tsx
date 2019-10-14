@@ -1,5 +1,6 @@
 import { ActionCreator } from "redux";
 import { FetchApi } from "../../services";
+import { IPhotoItemProps } from "../../components/page-home/photos-list/photo-item";
 
 export const PHOTOS_ACTIONS = {
   PHOTOS_LIST_ERROR: "PHOTOS_LIST_ERROR",
@@ -25,7 +26,7 @@ export const getPhotosList: ActionCreator<Function> = (
 
   FetchApi.get(
     `/api/photos?limit=2&skip=${offset}${
-      authorFilter ? `&author=${authorFilter}` : ""
+      authorFilter ? `&authorId=${authorFilter}` : ""
     }`
   ).subscribe((data: any) => {
     if (data.error) {
@@ -43,12 +44,10 @@ export const getPhotosList: ActionCreator<Function> = (
 };
 
 export const saveCachedPhotosList: ActionCreator<IPhotosActionsProps> = (
-  data: Array<any>
+  data: Array<IPhotoItemProps>
 ) => savePhotosList(data);
 
-export const updatePhotosListAuthorFilter: ActionCreator<
-  IPhotosActionsProps
-> = (authorFilter: string) => ({
+export const updatePhotosListAuthorFilter: ActionCreator<IPhotosActionsProps> = (authorFilter: string) => ({
   type: PHOTOS_ACTIONS.UPDATE_PHOTOS_LIST_AUTHOR_FILTER,
   authorFilter
 });
@@ -67,7 +66,7 @@ function photosListError(message: string) {
 }
 
 function savePhotosList(
-  data: Array<any>,
+  data: Array<IPhotoItemProps>,
   offset?: number,
   authorFilter?: string
 ) {

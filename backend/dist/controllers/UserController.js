@@ -9,6 +9,7 @@ const { host, frontHost } = require("../config");
 const keys = require("../config/keys");
 const validateSignUpInput = require("../validation/signup");
 const validateSignInInput = require("../validation/signin");
+const { getByUserNameSerializer } = require("../serializers/users");
 const create = function (req, res) {
     const { isValid, errors } = validateSignUpInput(req.body);
     const { password, email, userName } = req.body;
@@ -123,6 +124,21 @@ const activate = function (req, res) {
     }
 };
 module.exports.activate = activate;
+const getByUserName = function (req, res) {
+    const { userName } = req.params;
+    if (userName) {
+        User
+            .find({ userName: new RegExp(userName) }, null, { limit: 50 })
+            .then((results) => {
+            res.json({ results: results.map((result) => getByUserNameSerializer(result)) });
+        })
+            .catch((err) => res.status(404).json({ error: err.message }));
+    }
+    else {
+        res.status(400).json({ error: "MISSING_USER_NAME" });
+    }
+};
+module.exports.getByUserName = getByUserName;
 const get = function (req, res) {
     res.json({
         id: req.user.id,

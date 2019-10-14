@@ -3,6 +3,7 @@ import Recaptcha from './shared/recaptcha';
 import Popover from './shared/popover';
 import Spinner from './shared/spinner';
 import FormErrors from './shared/form-errors';
+import Autosuggest from './shared/autosuggest';
 import Navigation from './common/navigation';
 import Notifier from './common/notifier';
 
@@ -13,5 +14,6 @@ export {
   Recaptcha,
   Spinner,
   Popover,
-  FormErrors
+  FormErrors,
+  Autosuggest
 };

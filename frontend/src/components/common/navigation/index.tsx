@@ -1,4 +1,4 @@
-import React, { memo, FunctionComponent } from "react";
+import React, { memo, FunctionComponent, useCallback } from "react";
 import {
   fade,
   makeStyles,
@@ -9,23 +9,25 @@ import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
-import InputBase from "@material-ui/core/InputBase";
 import Badge from "@material-ui/core/Badge";
 import MenuItem from "@material-ui/core/MenuItem";
 import Menu from "@material-ui/core/Menu";
 import MenuIcon from "@material-ui/icons/Menu";
-import SearchIcon from "@material-ui/icons/Search";
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import NotificationsIcon from "@material-ui/icons/Notifications";
 import PowerSettingsNew from "@material-ui/icons/PowerSettingsNew";
 import ArrowRightAlt from "@material-ui/icons/ArrowRightAlt";
-import { LinkWrapper } from "../../_HOCs";
-import "./styles.scss";
 import { withRouter, RouteComponentProps } from "react-router";
 import { Tooltip } from "@material-ui/core";
 import { connect } from "react-redux";
 import { userData } from "../../../interfaces";
+
 import { logoutUser } from "../../../redux/actions/users";
+import { LinkWrapper } from "../../_HOCs";
+import "./styles.scss";
+import { updatePhotosListAuthorFilter } from "../../../redux/actions/photos";
+import { Autosuggest } from "../..";
+import { SuggestionItem } from "../../shared/autosuggest/suggestionsBox";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -44,6 +46,9 @@ const useStyles = makeStyles((theme: Theme) =>
       [theme.breakpoints.up("sm")]: {
         display: "block"
       }
+    },
+    toolbar: {
+      zIndex: 100
     },
     search: {
       position: "relative",
@@ -95,9 +100,18 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
+interface ISuggestedUser {
+  userName: string;
+  id: string;
+}
+
 const Navigation: FunctionComponent<
-  { userData: userData; logout: Function } & RouteComponentProps<{}>
-> = memo(({ history, logout, userData }) => {
+  {
+    userData: userData;
+    logoutUser: Function;
+    updatePhotosListAuthorFilter: Function;
+  } & RouteComponentProps<{}>
+> = memo(({ history, logoutUser, userData, updatePhotosListAuthorFilter }) => {
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [
@@ -110,7 +124,7 @@ const Navigation: FunctionComponent<
 
   function signOut() {
     localStorage.removeItem("JWT");
-    logout();
+    logoutUser();
     history.push("/");
   }
 
@@ -130,6 +144,18 @@ const Navigation: FunctionComponent<
   function handleMobileMenuOpen(event: React.MouseEvent<HTMLElement>) {
     setMobileMoreAnchorEl(event.currentTarget);
   }
+
+  const mapSuggestionListResponse = useCallback(
+    (user: ISuggestedUser): SuggestionItem => ({
+      value: user.id,
+      label: user.userName
+    }),
+    []
+  );
+
+  const updateFilter = useCallback((value: string) => {
+    updatePhotosListAuthorFilter(value);
+  }, []);
 
   const menuId = "primary-search-account-menu";
   const renderMenu = (
@@ -216,7 +242,7 @@ const Navigation: FunctionComponent<
   return (
     <div className={classes.grow}>
       <AppBar position="static">
-        <Toolbar>
+        <Toolbar className={classes.toolbar}>
           <IconButton
             edge="start"
             className={classes.menuButton}
@@ -231,19 +257,11 @@ const Navigation: FunctionComponent<
               face-ducks.com
             </LinkWrapper>
           </Typography>
-          <div className={classes.search}>
-            <div className={classes.searchIcon}>
-              <SearchIcon />
-            </div>
-            <InputBase
-              placeholder="Search the board…"
-              classes={{
-                root: classes.inputRoot,
-                input: classes.inputInput
-              }}
-              inputProps={{ "aria-label": "Search" }}
-            />
-          </div>
+          <Autosuggest
+            handleSuggestionSelect={updateFilter}
+            suggestionListApiUrl="/api/users/getByUserName/"
+            mapSuggestionListResponse={mapSuggestionListResponse}
+          />
           <div className={classes.grow} />
           <div className={classes.sectionDesktop}>
             {userData && (
@@ -301,7 +319,11 @@ function mapStateToProps(state: any) {
 }
 
 function mapDispatchToProps(dispatch: any) {
-  return { logout: () => dispatch(logoutUser()) };
+  return {
+    logoutUser: () => dispatch(logoutUser()),
+    updatePhotosListAuthorFilter: (value: string) =>
+      dispatch(updatePhotosListAuthorFilter(value))
+  };
 }
 
 export default connect(

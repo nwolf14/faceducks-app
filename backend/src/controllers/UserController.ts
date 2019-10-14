@@ -9,6 +9,7 @@ const { host, frontHost } = require("../config");
 const keys = require("../config/keys");
 const validateSignUpInput = require("../validation/signup");
 const validateSignInInput = require("../validation/signin");
+const { getByUserNameSerializer } = require("../serializers/users");
 
 const create = function(req: any, res: any) {
   const { isValid, errors } = validateSignUpInput(req.body);
@@ -65,7 +66,7 @@ const create = function(req: any, res: any) {
 
                 return user;
               })
-              .then((user: any) => res.json({  success: true, user }))
+              .then((user: any) => res.json({ success: true, user }))
               .catch((err: any) =>
                 res.status(400).json({ error: err.message })
               );
@@ -113,7 +114,8 @@ const signIn = function(req: any, res: any) {
             payload,
             keys.secretOrKey,
             { expiresIn: 3600 },
-            (err: string, token: string) => res.json({ success: true, token: "Bearer " + token})
+            (err: string, token: string) =>
+              res.json({ success: true, token: "Bearer " + token })
           );
         } else {
           errors.password = "PASSWORD_INCORRECT";
@@ -152,6 +154,22 @@ const activate = function(req: any, res: any) {
 };
 
 module.exports.activate = activate;
+
+const getByUserName = function(req: any, res: any) {
+  const { userName } = req.params;
+  if (userName) {
+    User
+      .find({ userName: new RegExp(userName) }, null, { limit: 50 })
+      .then((results: Array<IUser>) => {
+        res.json({ results: results.map((result: IUser) => getByUserNameSerializer(result)) });
+      })
+      .catch((err: any) => res.status(404).json({ error: err.message }));
+  } else {
+    res.status(400).json({ error: "MISSING_USER_NAME" });
+  }
+};
+
+module.exports.getByUserName = getByUserName;
 
 const get = function(req: any, res: any) {
   res.json({

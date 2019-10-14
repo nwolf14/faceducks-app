@@ -20,6 +20,11 @@ router.get("/activate/:userId", UserController.activate);
 // @access Public
 router.post("/signin", UserController.signIn);
 
+// @route GET /users/getByUserName
+// @desc Get the list of matching users
+// @access Public
+router.get("/getByUserName/:userName", UserController.getByUserName);
+
 // @route POST /users/current
 // @desc Return current user
 // @access Private

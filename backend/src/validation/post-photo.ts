@@ -8,6 +8,10 @@ module.exports = function validatePostPhotoPayload(data: IPhotoInput) {
     errors.author = "AUTHOR_REQUIRED";
   }
 
+  if (_.isEmpty(data.authorId)) {
+    errors.authorId = "AUTHOR_REQUIRED";
+  }
+
   if (_.isEmpty(data.photo)) {
     errors.photo = "PHOTO_REQUIRED";
   }

@@ -31,7 +31,7 @@ const Wrapper: FunctionComponent<IProps & { children: React.ReactNode | null | E
   }
 
   return (
-    <span
+    <a
       role="button"
       aria-label={ariaLabel}
       onKeyDown={maybeEnter}
@@ -46,7 +46,7 @@ const Wrapper: FunctionComponent<IProps & { children: React.ReactNode | null | E
       >
         {children}
       </span>
-    </span>
+    </a>
   );
 };
 

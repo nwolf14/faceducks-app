@@ -52,8 +52,9 @@ const PhotoModalForm: FunctionComponent<
     capturedImage: string;
     closeForm: React.EventHandler<SyntheticEvent>;
     userName: string;
+    userId: string;
   } & RouteComponentProps<{}>
-> = memo(({ capturedImage, closeForm, history, userName }) => {
+> = memo(({ capturedImage, closeForm, history, userName, userId }) => {
   const userToken = localStorage.getItem("JWT");
   const formNode = React.useRef<HTMLFormElement>(null);
   const [photoForm, setForm] = React.useState(newPhotoFormModel);
@@ -69,7 +70,7 @@ const PhotoModalForm: FunctionComponent<
             concatMap(mappedForm =>
               FetchApi.post(
                 "/api/photos",
-                { ...mappedForm, author: userName, photo: capturedImage },
+                { ...mappedForm, author: userName, photo: capturedImage, authorId: userId },
                 userToken
               )
             ),
@@ -162,4 +163,11 @@ const PhotoModalForm: FunctionComponent<
   );
 });
 
-export default connect(state => ({userName: _.get(state, ['user', 'userData', 'userName'], '')}))(withRouter(PhotoModalForm));
+function mapStateToProps(state: any) {
+  return {
+    userName: _.get(state, ["user", "userData", "userName"], ""),
+    userId: _.get(state, ["user", "userData", "id"], "")
+  };
+}
+
+export default connect(mapStateToProps)(withRouter(PhotoModalForm));

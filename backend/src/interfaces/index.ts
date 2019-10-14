@@ -17,6 +17,7 @@ export interface IUser {
 
 export interface IPhotoInput {
   author?: string;
+  authorId?: string;
   description?: string;
   photo?: string;
   hashtagsList?: string;
