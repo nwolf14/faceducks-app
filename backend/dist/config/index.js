@@ -1,6 +1,6 @@
 let config = {
     host: "http://localhost:6200",
-    frontHost: "http://localhost:5000",
+    frontHost: "http://localhost:3100",
     nodemailer: {
         host: "smtp.gmail.com",
         port: 465,

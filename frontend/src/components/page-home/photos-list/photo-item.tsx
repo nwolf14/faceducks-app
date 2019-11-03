@@ -1,4 +1,4 @@
-import React, { FunctionComponent, memo } from "react";
+import React, { FunctionComponent, memo, Fragment } from "react";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
 import Card from "@material-ui/core/Card";
@@ -13,6 +13,9 @@ import { red } from "@material-ui/core/colors";
 import FavoriteIcon from "@material-ui/icons/Favorite";
 import ShareIcon from "@material-ui/icons/Share";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import PersonAddIcon from "@material-ui/icons/PersonAdd";
+import PersonOutlinedIcon from "@material-ui/icons/PersonOutlined";
+import PeopleIcon from "@material-ui/icons/PeopleOutline";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -35,6 +38,17 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     expandOpen: {
       transform: "rotate(180deg)"
+    },
+    cardHeader: {
+      display: "inline-flex",
+      alignItems: "center"
+    },
+    iconsWrapper: {
+      display: "inline-flex",
+      marginRight: ".5rem"
+    },
+    icon: {
+      cursor: "pointer"
     },
     avatar: {
       backgroundColor: red[500]
@@ -67,15 +81,26 @@ const PhotoItem: FunctionComponent<IPhotoItemProps> = ({
     <Card className={classes.card}>
       <CardHeader
         avatar={
-          <Avatar aria-label={`${author}'s avatar`} className={classes.avatar}>
-            {author.substr(0, 1).toUpperCase()}
-          </Avatar>
+          <Fragment>
+            <div className={classes.iconsWrapper}>
+              <PersonAddIcon classes={{root: classes.icon}}/>
+            </div>
+            <Avatar
+              aria-label={`${author}'s avatar`}
+              className={classes.avatar}
+            >
+              {author.substr(0, 1).toUpperCase()}
+            </Avatar>
+          </Fragment>
         }
         // action={
         //   <IconButton aria-label="settings">
         //     <MoreVertIcon />
         //   </IconButton>
         // }
+        classes={{
+          avatar: classes.cardHeader
+        }}
         title={author}
         subheader={created_at}
       />

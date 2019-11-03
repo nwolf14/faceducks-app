@@ -13,6 +13,9 @@ export interface IUser {
   is_mail_confirmed: boolean;
   created_at: Date;
   avatar: string;
+  friends: Array<any>;
+  friends_requests: Array<any>;
+  notifications: Array<any>;
 }
 
 export interface IPhotoInput {

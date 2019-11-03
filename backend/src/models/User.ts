@@ -5,7 +5,8 @@ const Schema = mongoose.Schema;
 const UserSchema = new Schema({
   userName: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   password: {
     type: String,
@@ -27,6 +28,39 @@ const UserSchema = new Schema({
   created_at: {
     type: Date,
     default: Date.now
+  },
+  notifications: {
+    type: [
+      {
+        notificationType: String,
+        fromUser: String
+      }
+    ],
+    default: []
+  },
+  friends: {
+    type: [
+      {
+        userName: String
+      }
+    ],
+    default: []
+  },
+  friends_requests_incoming: {
+    type: [
+      {
+        fromUser: String
+      }
+    ],
+    default: []
+  },
+  friends_requests_outcoming: {
+    type: [
+      {
+        toUser: String
+      }
+    ],
+    default: []
   }
 });
 

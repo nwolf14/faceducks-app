@@ -24,15 +24,15 @@ const create = function(req: any, res: any) {
     });
 };
 
-module.exports.create = create;
+module.exports.create = create; 
 
 const get = function(req: any, res: any) {
-  const { authorId, skip = 0, limit = 10 } = req.query
-  const filter: { authorId?: string; } = {};
+  const { author, skip = 0, limit = 10 } = req.query
+  const filter: { author?: string; } = {};
   const sort: {created_at: number; } = { created_at: -1 };
 
-  if (authorId) {
-    filter.authorId = authorId;
+  if (author) {
+    filter.author = author;
   }
 
   Photo.find(filter, null, { skip: Number(skip), limit: Number(limit), sort })

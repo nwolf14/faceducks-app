@@ -20,11 +20,11 @@ const create = function (req, res) {
 };
 module.exports.create = create;
 const get = function (req, res) {
-    const { authorId, skip = 0, limit = 10 } = req.query;
+    const { author, skip = 0, limit = 10 } = req.query;
     const filter = {};
     const sort = { created_at: -1 };
-    if (authorId) {
-        filter.authorId = authorId;
+    if (author) {
+        filter.author = author;
     }
     Photo.find(filter, null, { skip: Number(skip), limit: Number(limit), sort })
         .then((photos) => res.json({ result: photos }))

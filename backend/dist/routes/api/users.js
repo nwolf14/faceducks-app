@@ -24,5 +24,21 @@ router.get("/getByUserName/:userName", UserController.getByUserName);
 // @desc Return current user
 // @access Private
 router.get("/current", passport.authenticate("jwt", { session: false }), UserController.get);
+// @route GET /users/sendFriendshipRequest
+// @desc sends friendship request to another user
+// @access Private
+router.get("/sendFriendshipRequest/:toUser", passport.authenticate("jwt", { session: false }), UserController.sendFriendshipRequest);
+// @route GET /users/acceptFriendshipRequest
+// @desc accpets friendship request to another user
+// @access Private
+router.get("/acceptFriendshipRequest/:fromUser", passport.authenticate("jwt", { session: false }), UserController.acceptFriendshipRequest);
+// @route GET /users/refuseFriendshipRequest
+// @desc refuse friendship request to another user
+// @access Private
+router.get("/refuseFriendshipRequest/:fromUser", passport.authenticate("jwt", { session: false }), UserController.refuseFriendshipRequest);
+// @route GET /users/refuseFriendshipRequest
+// @desc refuse friendship request to another user
+// @access Private
+router.get("/clearAllNotifications", passport.authenticate("jwt", { session: false }), UserController.clearAllNotifications);
 module.exports = router;
 //# sourceMappingURL=users.js.map

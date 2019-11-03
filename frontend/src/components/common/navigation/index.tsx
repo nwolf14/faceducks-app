@@ -147,7 +147,7 @@ const Navigation: FunctionComponent<
 
   const mapSuggestionListResponse = useCallback(
     (user: ISuggestedUser): SuggestionItem => ({
-      value: user.id,
+      value: user.userName,
       label: user.userName
     }),
     []

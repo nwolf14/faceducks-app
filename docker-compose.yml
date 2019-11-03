@@ -1,16 +1,41 @@
 version: "3"
 services:
-  mongodb:
-    image: mongo:4.2
-    command: mongod --port 27015
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=norbi
-      - MONGO_INITDB_ROOT_PASSWORD=norbi123
-      - MONGO_INITDB_DATABASE=faceducks
-    ports:
-      - "27015:27015"
+  mongo-rs0-1:
+    image: 'mongo-start'
+    build: ./mongo-rs0-1
     volumes:
-      - ./db/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - ./mongo-rs0-1/data:/data/db
+    ports:
+      - '27010:27010'
+    depends_on:
+      - 'mongo-rs0-2'
+      - 'mongo-rs0-3'
+
+  mongo-rs0-2:
+    image: 'mongo:4.2'
+    command: --replSet rs0
+    command: --config ./conf/mongo.conf
+    ports:
+      - '27011:27011'
+    volumes:
+      - ./mongo-rs0-2/data:/data/db
+      - ./mongo-rs0-2/conf:/conf
+
+  mongo-rs0-3:
+    image: 'mongo:4.2'
+    command: --replSet rs0
+    command: --config ./conf/mongo.conf
+    ports:
+      - '27012:27012'
+    volumes:
+      - ./mongo-rs0-3/data:/data/db
+      - ./mongo-rs0-3/conf:/conf
+
+  setup-rs:
+    image: 'setup-rs'
+    build: ./setup
+    depends_on:
+      - 'mongo-rs0-1'
 
   backend:
     build:
@@ -22,7 +47,7 @@ services:
       - "./backend:/usr/src/app"
       - "/usr/src/app/node_modules"
     depends_on:
-      - mongodb
+      - setup-rs
 
   frontend:
     build:

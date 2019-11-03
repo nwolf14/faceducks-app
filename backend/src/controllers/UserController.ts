@@ -3,13 +3,16 @@ export {};
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const gravatar = require("gravatar");
+const _ = require("lodash");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+
 const { host, frontHost } = require("../config");
 const keys = require("../config/keys");
 const validateSignUpInput = require("../validation/signup");
 const validateSignInInput = require("../validation/signin");
 const { getByUserNameSerializer } = require("../serializers/users");
+const { NOTIFICATION_TYPES } = require("../config/constants");
 
 const create = function(req: any, res: any) {
   const { isValid, errors } = validateSignUpInput(req.body);
@@ -19,10 +22,16 @@ const create = function(req: any, res: any) {
     return res.status(400).json({ errors });
   }
 
-  User.findOne({ email })
+  User.findOne({ email, userName })
     .then((user: any) => {
       if (user) {
-        errors.email = "EMAIL_EXISTS";
+        if (user.email === email) {
+          errors.email = "EMAIL_EXISTS";
+        }
+        if (user.userName === userName) {
+          errors.userName = "USER_NAME_EXISTS";
+        }
+
         return res.status(400).json({ errors });
       } else {
         const avatar = gravatar.url(email, {
@@ -158,25 +167,266 @@ module.exports.activate = activate;
 const getByUserName = function(req: any, res: any) {
   const { userName } = req.params;
   if (userName) {
-    User
-      .find({ userName: new RegExp(userName) }, null, { limit: 50 })
+    User.find({ userName: new RegExp(userName) }, null, { limit: 50 })
       .then((results: Array<IUser>) => {
-        res.json({ results: results.map((result: IUser) => getByUserNameSerializer(result)) });
+        res.json({
+          results: results.map((result: IUser) =>
+            getByUserNameSerializer(result)
+          )
+        });
       })
       .catch((err: any) => res.status(404).json({ error: err.message }));
   } else {
-    res.status(400).json({ error: "MISSING_USER_NAME" });
+    res.status(400).json({ error: "MISSING_PARAM" });
   }
 };
 
 module.exports.getByUserName = getByUserName;
 
 const get = function(req: any, res: any) {
-  res.json({
-    id: req.user.id,
-    userName: req.user.userName,
-    email: req.user.email
-  });
+  const { id, userName, email } = req.user;
+  if (id) {
+    User.findOne({ _id: id })
+      .then((result: IUser) => {
+        const { friends, friends_requests, notifications } = result;
+
+        res.json({
+          id,
+          userName,
+          email,
+          friends,
+          friends_requests,
+          notifications
+        });
+      })
+      .catch((err: any) => res.status(404).json({ error: err.message }));
+  } else {
+    res.status(400).json({ error: "USER_NOT_LOGGED_IN" });
+  }
 };
 
 module.exports.get = get;
+
+const sendFriendshipRequest = async (req: any, res: any) => {
+  const { userName } = req.user;
+  const fromUser = userName;
+  const { toUser } = req.params;
+
+  if (userName && toUser) {
+    const globalAny: any = global;
+    const session = await globalAny.mongoClient.startSession();
+
+    if (session) {
+      session.startTransaction();
+
+      try {
+        const results = await Promise.all([
+          User.findOneAndUpdate(
+            { userName: fromUser },
+            {
+              $push: {
+                friends_requests_outcoming: {
+                  toUser
+                }
+              }
+            },
+            { useFindAndModify: true, session }
+          ),
+          User.findOneAndUpdate(
+            { userName: toUser },
+            {
+              $push: {
+                friends_requests_incoming: {
+                  fromUser
+                },
+                notifications: {
+                  notificationType: NOTIFICATION_TYPES.FRIENDSHIP_REQUEST,
+                  fromUser
+                }
+              }
+            },
+            { useFindAndModify: true, session }
+          )
+        ]);
+
+        if (!_.some(results, (result: string) => _.isNull(result))) {
+          await session.commitTransaction();
+          res.status(200).json({ success: true });
+        } else {
+          await session.abortTransaction();
+          res.status(400).json({ success: false });
+        }
+      } catch (e) {
+        await session.abortTransaction();
+        console.error(e);
+        res.status(400).json({ success: false });
+      } finally {
+        session.endSession();
+      }
+    }
+  } else {
+    res.status(400).json({ error: "MISSING_PARAM" });
+  }
+};
+
+module.exports.sendFriendshipRequest = sendFriendshipRequest;
+
+const acceptFriendshipRequest = async (req: any, res: any) => {
+  const { userName } = req.user;
+  const { fromUser } = req.params;
+
+  if (userName && fromUser) {
+    const globalAny: any = global;
+    const session = await globalAny.mongoClient.startSession();
+
+    if (session) {
+      session.startTransaction();
+
+      try {
+        const results = await Promise.all([
+          User.findOneAndUpdate(
+            { userName: fromUser },
+            {
+              $pull: {
+                friends_requests_outcoming: {
+                  toUser: userName
+                }
+              },
+              $push: {
+                notifications: {
+                  notificationType: NOTIFICATION_TYPES.FRIENDSHIP_ACCEPTED,
+                  fromUser: userName
+                },
+                friends: {
+                  userName
+                }
+              }
+            },
+            { useFindAndModify: true, session }
+          ),
+          User.findOneAndUpdate(
+            { userName },
+            {
+              $pull: {
+                friends_requests_incoming: {
+                  fromUser
+                }
+              },
+              $push: {
+                friends: {
+                  userName: fromUser
+                }
+              }
+            },
+            { useFindAndModify: true, session }
+          )
+        ]);
+
+        if (!_.some(results, (result: string) => _.isNull(result))) {
+          await session.commitTransaction();
+          res.status(200).json({ success: true });
+        } else {
+          await session.abortTransaction();
+          res.status(400).json({ success: false });
+        }
+      } catch (e) {
+        await session.abortTransaction();
+        console.error(e);
+        res.status(400).json({ success: false });
+      } finally {
+        session.endSession();
+      }
+    }
+  } else {
+    res.status(400).json({ error: "MISSING_PARAM" });
+  }
+};
+
+module.exports.acceptFriendshipRequest = acceptFriendshipRequest;
+
+const refuseFriendshipRequest = async (req: any, res: any) => {
+  const { userName } = req.user;
+  const { fromUser } = req.params;
+
+  if (userName && fromUser) {
+    const globalAny: any = global;
+    const session = await globalAny.mongoClient.startSession();
+
+    if (session) {
+      session.startTransaction();
+
+      try {
+        const results = await Promise.all([
+          User.findOneAndUpdate(
+            { userName: fromUser },
+            {
+              $pull: {
+                friends_requests_outcoming: {
+                  toUser: userName
+                }
+              },
+              $push: {
+                notifications: {
+                  notificationType: NOTIFICATION_TYPES.FRIENDSHIP_REFUSED,
+                  fromUser: userName
+                }
+              }
+            },
+            { useFindAndModify: true, session }
+          ),
+          User.findOneAndUpdate(
+            { userName },
+            {
+              $pull: {
+                friends_requests_incoming: {
+                  fromUser
+                }
+              }
+            },
+            { useFindAndModify: true, session }
+          )
+        ]);
+
+        if (!_.some(results, (result: string) => _.isNull(result))) {
+          await session.commitTransaction();
+          res.status(200).json({ success: true });
+        } else {
+          await session.abortTransaction();
+          res.status(400).json({ success: false });
+        }
+      } catch (e) {
+        await session.abortTransaction();
+        console.error(e);
+        res.status(400).json({ success: false });
+      } finally {
+        session.endSession();
+      }
+    }
+  } else {
+    res.status(400).json({ error: "MISSING_PARAM" });
+  }
+};
+
+module.exports.refuseFriendshipRequest = refuseFriendshipRequest;
+
+const clearAllNotifications = async (req: any, res: any) => {
+  const { userName } = req.user;
+
+  if (userName) {
+    User.findOneAndUpdate(
+      { userName },
+      {
+        $set: {
+          notifications: []
+        }
+      },
+      { useFindAndModify: true }
+    )
+      .then(() => res.json({ success: true }))
+      .catch((err: any) => res.status(404).json({ error: err.message }));
+  } else {
+    res.status(400).json({ error: "MISSING_USER_NAME" });
+  }
+};
+
+module.exports.clearAllNotifications = clearAllNotifications;

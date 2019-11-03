@@ -1,8 +1,17 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const gravatar = require("gravatar");
+const _ = require("lodash");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const { host, frontHost } = require("../config");
@@ -10,16 +19,22 @@ const keys = require("../config/keys");
 const validateSignUpInput = require("../validation/signup");
 const validateSignInInput = require("../validation/signin");
 const { getByUserNameSerializer } = require("../serializers/users");
+const { NOTIFICATION_TYPES } = require("../config/constants");
 const create = function (req, res) {
     const { isValid, errors } = validateSignUpInput(req.body);
     const { password, email, userName } = req.body;
     if (!isValid) {
         return res.status(400).json({ errors });
     }
-    User.findOne({ email })
+    User.findOne({ email, userName })
         .then((user) => {
         if (user) {
-            errors.email = "EMAIL_EXISTS";
+            if (user.email === email) {
+                errors.email = "EMAIL_EXISTS";
+            }
+            if (user.userName === userName) {
+                errors.userName = "USER_NAME_EXISTS";
+            }
             return res.status(400).json({ errors });
         }
         else {
@@ -127,24 +142,227 @@ module.exports.activate = activate;
 const getByUserName = function (req, res) {
     const { userName } = req.params;
     if (userName) {
-        User
-            .find({ userName: new RegExp(userName) }, null, { limit: 50 })
+        User.find({ userName: new RegExp(userName) }, null, { limit: 50 })
             .then((results) => {
-            res.json({ results: results.map((result) => getByUserNameSerializer(result)) });
+            res.json({
+                results: results.map((result) => getByUserNameSerializer(result))
+            });
         })
+            .catch((err) => res.status(404).json({ error: err.message }));
+    }
+    else {
+        res.status(400).json({ error: "MISSING_PARAM" });
+    }
+};
+module.exports.getByUserName = getByUserName;
+const get = function (req, res) {
+    const { id, userName, email } = req.user;
+    if (id) {
+        User.findOne({ _id: id })
+            .then((result) => {
+            const { friends, friends_requests, notifications } = result;
+            res.json({
+                id,
+                userName,
+                email,
+                friends,
+                friends_requests,
+                notifications
+            });
+        })
+            .catch((err) => res.status(404).json({ error: err.message }));
+    }
+    else {
+        res.status(400).json({ error: "USER_NOT_LOGGED_IN" });
+    }
+};
+module.exports.get = get;
+const sendFriendshipRequest = (req, res) => __awaiter(this, void 0, void 0, function* () {
+    const { userName } = req.user;
+    const fromUser = userName;
+    const { toUser } = req.params;
+    if (userName && toUser) {
+        const globalAny = global;
+        const session = yield globalAny.mongoClient.startSession();
+        if (session) {
+            session.startTransaction();
+            try {
+                const results = yield Promise.all([
+                    User.findOneAndUpdate({ userName: fromUser }, {
+                        $push: {
+                            friends_requests_outcoming: {
+                                toUser
+                            }
+                        }
+                    }, { useFindAndModify: true, session }),
+                    User.findOneAndUpdate({ userName: toUser }, {
+                        $push: {
+                            friends_requests_incoming: {
+                                fromUser
+                            },
+                            notifications: {
+                                notificationType: NOTIFICATION_TYPES.FRIENDSHIP_REQUEST,
+                                fromUser
+                            }
+                        }
+                    }, { useFindAndModify: true, session })
+                ]);
+                if (!_.some(results, (result) => _.isNull(result))) {
+                    yield session.commitTransaction();
+                    res.status(200).json({ success: true });
+                }
+                else {
+                    yield session.abortTransaction();
+                    res.status(400).json({ success: false });
+                }
+            }
+            catch (e) {
+                yield session.abortTransaction();
+                console.error(e);
+                res.status(400).json({ success: false });
+            }
+            finally {
+                session.endSession();
+            }
+        }
+    }
+    else {
+        res.status(400).json({ error: "MISSING_PARAM" });
+    }
+});
+module.exports.sendFriendshipRequest = sendFriendshipRequest;
+const acceptFriendshipRequest = (req, res) => __awaiter(this, void 0, void 0, function* () {
+    const { userName } = req.user;
+    const { fromUser } = req.params;
+    if (userName && fromUser) {
+        const globalAny = global;
+        const session = yield globalAny.mongoClient.startSession();
+        if (session) {
+            session.startTransaction();
+            try {
+                const results = yield Promise.all([
+                    User.findOneAndUpdate({ userName: fromUser }, {
+                        $pull: {
+                            friends_requests_outcoming: {
+                                toUser: userName
+                            }
+                        },
+                        $push: {
+                            notifications: {
+                                notificationType: NOTIFICATION_TYPES.FRIENDSHIP_ACCEPTED,
+                                fromUser: userName
+                            },
+                            friends: {
+                                userName
+                            }
+                        }
+                    }, { useFindAndModify: true, session }),
+                    User.findOneAndUpdate({ userName }, {
+                        $pull: {
+                            friends_requests_incoming: {
+                                fromUser
+                            }
+                        },
+                        $push: {
+                            friends: {
+                                userName: fromUser
+                            }
+                        }
+                    }, { useFindAndModify: true, session })
+                ]);
+                if (!_.some(results, (result) => _.isNull(result))) {
+                    yield session.commitTransaction();
+                    res.status(200).json({ success: true });
+                }
+                else {
+                    yield session.abortTransaction();
+                    res.status(400).json({ success: false });
+                }
+            }
+            catch (e) {
+                yield session.abortTransaction();
+                console.error(e);
+                res.status(400).json({ success: false });
+            }
+            finally {
+                session.endSession();
+            }
+        }
+    }
+    else {
+        res.status(400).json({ error: "MISSING_PARAM" });
+    }
+});
+module.exports.acceptFriendshipRequest = acceptFriendshipRequest;
+const refuseFriendshipRequest = (req, res) => __awaiter(this, void 0, void 0, function* () {
+    const { userName } = req.user;
+    const { fromUser } = req.params;
+    if (userName && fromUser) {
+        const globalAny = global;
+        const session = yield globalAny.mongoClient.startSession();
+        if (session) {
+            session.startTransaction();
+            try {
+                const results = yield Promise.all([
+                    User.findOneAndUpdate({ userName: fromUser }, {
+                        $pull: {
+                            friends_requests_outcoming: {
+                                toUser: userName
+                            }
+                        },
+                        $push: {
+                            notifications: {
+                                notificationType: NOTIFICATION_TYPES.FRIENDSHIP_REFUSED,
+                                fromUser: userName
+                            }
+                        }
+                    }, { useFindAndModify: true, session }),
+                    User.findOneAndUpdate({ userName }, {
+                        $pull: {
+                            friends_requests_incoming: {
+                                fromUser
+                            }
+                        }
+                    }, { useFindAndModify: true, session })
+                ]);
+                if (!_.some(results, (result) => _.isNull(result))) {
+                    yield session.commitTransaction();
+                    res.status(200).json({ success: true });
+                }
+                else {
+                    yield session.abortTransaction();
+                    res.status(400).json({ success: false });
+                }
+            }
+            catch (e) {
+                yield session.abortTransaction();
+                console.error(e);
+                res.status(400).json({ success: false });
+            }
+            finally {
+                session.endSession();
+            }
+        }
+    }
+    else {
+        res.status(400).json({ error: "MISSING_PARAM" });
+    }
+});
+module.exports.refuseFriendshipRequest = refuseFriendshipRequest;
+const clearAllNotifications = (req, res) => __awaiter(this, void 0, void 0, function* () {
+    const { userName } = req.user;
+    if (userName) {
+        User.findOneAndUpdate({ userName }, {
+            $set: {
+                notifications: []
+            }
+        }, { useFindAndModify: true })
+            .then(() => res.json({ success: true }))
             .catch((err) => res.status(404).json({ error: err.message }));
     }
     else {
         res.status(400).json({ error: "MISSING_USER_NAME" });
     }
-};
-module.exports.getByUserName = getByUserName;
-const get = function (req, res) {
-    res.json({
-        id: req.user.id,
-        userName: req.user.userName,
-        email: req.user.email
-    });
-};
-module.exports.get = get;
+});
+module.exports.clearAllNotifications = clearAllNotifications;
 //# sourceMappingURL=UserController.js.map

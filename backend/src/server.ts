@@ -20,9 +20,14 @@ server.options("*", cors({ credentials: true, origin: true }));
 server.use(passport.initialize());
 require("./config/passport")(passport);
 
+const globalAny: any = global;
+console.log(db)
 mongoose
   .connect(db, { useUnifiedTopology: true, useNewUrlParser: true })
-  .then(() => console.log("MongoDB Connected..."))
+  .then((client: any) => {
+    console.log("MongoDB Connected...", db)
+    globalAny.mongoClient = client;
+  })
   .catch((err: string) => console.log(err));
 
 server.use("/api/users", users);

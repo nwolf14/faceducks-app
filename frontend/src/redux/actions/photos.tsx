@@ -26,7 +26,7 @@ export const getPhotosList: ActionCreator<Function> = (
 
   FetchApi.get(
     `/api/photos?limit=2&skip=${offset}${
-      authorFilter ? `&authorId=${authorFilter}` : ""
+      authorFilter ? `&author=${authorFilter}` : ""
     }`
   ).subscribe((data: any) => {
     if (data.error) {
