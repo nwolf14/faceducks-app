@@ -12,9 +12,26 @@ export interface IInputStructure {
   [key: string]: any;
 }
 
-export interface IUserData {
+export interface IUserDataRaw {
+  id: string;
   userName: string;
-  userId: string;
+  is_mail_confirmed: boolean;
+  avatar?: string;
+  friends: Array<IFriend>;
+  friends_requests_outcoming: Array<IFriendsRequestsOutcoming>;
+  friends_requests_incoming: Array<IFriendsRequestsIncoming>;
+  notifications: Array<any>;
+}
+
+export interface IUserData {
+  id: string;
+  userName: string;
+  is_mail_confirmed: boolean;
+  avatar?: string;
+  friends: IObjectOfObject<IFriend>;
+  friends_requests_outcoming: IObjectOfObject<IFriendsRequestsOutcoming>;
+  friends_requests_incoming: IObjectOfObject<IFriendsRequestsIncoming>;
+  notifications: Array<any>;
 }
 
 export interface IForm {
@@ -56,20 +73,22 @@ export interface IObserver {
   complete?: Function;
 };
 
-export interface IUserDataProps {
-  userData: object;
-}
-
 export interface IFormWithEvent {
   event: React.FormEvent<HTMLFormElement>;
   form: IForm;
   formNode: RefObject<HTMLFormElement>;
 }
 
-export interface IUserData {
-  userName: string;
-  id: string;
-  email: string;
+export interface IFriendsRequestsIncoming {
+  fromUser: string;
+}
+
+export interface IFriendsRequestsOutcoming {
+  toUser: string;
+}
+
+export interface IFriend {
+  userName: string
 }
 
 export type userData = null | IUserData;

@@ -1,6 +1,7 @@
 import { ActionCreator } from "redux";
 import { FetchApi } from "../../services";
 import { ERROR_CODES } from "../../lib/constants";
+import { IUserDataRaw } from "../../interfaces";
 
 export const USER_ACTIONS = {
   GET_USER: "GET_USER",
@@ -9,7 +10,7 @@ export const USER_ACTIONS = {
 
 export interface IUserAction {
   type: string;
-  userData?: object;
+  userData?: IUserDataRaw;
 }
 
 export const getUser: ActionCreator<Function> = (token: string) => (

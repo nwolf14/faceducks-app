@@ -1,7 +1,7 @@
 import React, { Component, Suspense, lazy } from "react";
 import { Route, Switch } from "react-router-dom";
 import { ROUTES } from "./lib/constants";
-import { Navigation, Spinner, Popover, Notifier } from "./components";
+import { Navigation, Spinner, Popover, Notifier, FriendsDrawer, Chatbox } from "./components";
 import { connect } from "react-redux";
 import { getUser } from "./redux/actions/users";
 
@@ -22,6 +22,8 @@ class App extends Component<{ getUserFromToken: Function }, {}> {
     return (
       <Notifier>
         <Navigation />
+        <FriendsDrawer />
+        <Chatbox />
         <main style={{ position: "relative" }}>
           <Suspense fallback={<Spinner size={80} />}>
             <Switch>

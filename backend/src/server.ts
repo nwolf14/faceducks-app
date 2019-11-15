@@ -18,21 +18,21 @@ server.use(bodyParser.json({ limit: "5mb" }));
 server.use(cors({ credentials: true, origin: true }));
 server.options("*", cors({ credentials: true, origin: true }));
 server.use(passport.initialize());
-require("./config/passport")(passport);
+require("./config/passport")(passport); 
 
 const globalAny: any = global;
 console.log(db)
 mongoose
   .connect(db, { useUnifiedTopology: true, useNewUrlParser: true })
   .then((client: any) => {
-    console.log("MongoDB Connected...", db)
+    console.log("MongoDB Connected...", db) 
     globalAny.mongoClient = client;
   })
-  .catch((err: string) => console.log(err));
+  .catch((err: string) => console.log(err));  
 
 server.use("/api/users", users);
 server.use("/api", photos);
 
-const port = process.env.PORT || 6200;
+const port = process.env.PORT || 6200; 
 
 server.listen(port, () => console.log(`Server started on port ${port}`));

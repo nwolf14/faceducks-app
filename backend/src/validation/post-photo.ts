@@ -1,4 +1,4 @@
-import { IPhotoInput } from "../interfaces";
+import { IPhotoInput } from "../lib/interfaces";
 const _ = require('lodash');
 
 module.exports = function validatePostPhotoPayload(data: IPhotoInput) {

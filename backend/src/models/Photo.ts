@@ -9,7 +9,7 @@ const PhotoSchema = new Schema({
   },
   description: {
     type: String,
-    required: false
+    required: false 
   },
   hashtagsList: {
     type: Array,

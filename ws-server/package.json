@@ -1,0 +1,19 @@
+{
+  "name": "ws-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "local": "NODE_ENV=local-debug nodemon --inspect server.js",
+    "qa": "NODE_ENV=qa nodemon --inspect server.js",
+    "start": "NODE_ENV=prod node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "config": "^3.2.4",
+    "websocket": "^1.0.30"
+  }
+}

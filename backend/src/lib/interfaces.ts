@@ -4,8 +4,8 @@ export interface IUserInput {
   repeatPassword?: string;
   userName?: string;
 }
-
-export interface IUser {
+ 
+export interface IUser { 
   id: string;
   email: string;
   password: string;
@@ -14,11 +14,12 @@ export interface IUser {
   created_at: Date;
   avatar: string;
   friends: Array<any>;
-  friends_requests: Array<any>;
+  friends_requests_outcoming: Array<{ toUser: string }>;
+  friends_requests_incoming: Array<{ fromUser: string }>;
   notifications: Array<any>;
 }
 
-export interface IPhotoInput {
+export interface IPhotoInput {  
   author?: string;
   authorId?: string;
   description?: string;

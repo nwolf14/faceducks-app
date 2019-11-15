@@ -17,11 +17,7 @@ let config = {
         }
     }
 };
-if (process.env.NODE_ENV === "development") {
-    config.host = "http://localhost:6200";
-    config.frontHost = "http://localhost:3100";
-}
-if (process.env.NODE_ENV === "local-debug") {
+if (process.env.NODE_ENV === "local") {
     config.host = "http://localhost:5100";
     config.frontHost = "http://localhost:3100";
 }

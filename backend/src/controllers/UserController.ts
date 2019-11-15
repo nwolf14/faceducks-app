@@ -1,4 +1,4 @@
-import { IUser } from "../interfaces";
+import { IUser } from "../lib/interfaces";
 export {};
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
@@ -12,7 +12,7 @@ const keys = require("../config/keys");
 const validateSignUpInput = require("../validation/signup");
 const validateSignInInput = require("../validation/signin");
 const { getByUserNameSerializer } = require("../serializers/users");
-const { NOTIFICATION_TYPES } = require("../config/constants");
+const { NOTIFICATION_TYPES } = require("../lib/constants");
 
 const create = function(req: any, res: any) {
   const { isValid, errors } = validateSignUpInput(req.body);
@@ -188,14 +188,22 @@ const get = function(req: any, res: any) {
   if (id) {
     User.findOne({ _id: id })
       .then((result: IUser) => {
-        const { friends, friends_requests, notifications } = result;
+        const {
+          friends,
+          friends_requests_incoming,
+          avatar,
+          friends_requests_outcoming,
+          notifications
+        } = result;
 
         res.json({
           id,
           userName,
           email,
+          avatar,
           friends,
-          friends_requests,
+          friends_requests_incoming,
+          friends_requests_outcoming,
           notifications
         });
       })
@@ -298,7 +306,7 @@ const acceptFriendshipRequest = async (req: any, res: any) => {
                   fromUser: userName
                 },
                 friends: {
-                  userName
+                  userName: fromUser
                 }
               }
             },

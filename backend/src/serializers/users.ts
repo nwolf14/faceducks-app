@@ -1,4 +1,4 @@
-import { IUser } from "../interfaces";
+import { IUser } from "../lib/interfaces";
 
 function getByUserNameSerializer(user: IUser) {
   const { userName, id} = user;

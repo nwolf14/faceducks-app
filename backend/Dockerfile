@@ -11,4 +11,4 @@ COPY package.json /usr/src/app/package.json
 
 RUN npm install --silent
 
-CMD [ "npm", "start" ]
+CMD [ "npm", "run", "qa" ]

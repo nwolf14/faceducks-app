@@ -14,6 +14,7 @@ import {
 import { Grid } from "@material-ui/core";
 import { generateUniqueKey } from "../../../lib/functions";
 import './styles.scss';
+import { userData } from "../../../interfaces";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -35,8 +36,10 @@ const PhotosList: FunctionComponent<{
   authorFilter: string;
   savePhotosList: Function;
   getPhotosList: Function;
+  userData: userData
 }> = memo(
   ({
+    userData,
     photosList,
     error,
     offset,
@@ -47,6 +50,7 @@ const PhotosList: FunctionComponent<{
     getPhotosList
   }) => {
     const classes = useStyles();
+
     const getPhotosListFromDb = useCallback(() => {
       if (!offline) {
         getPhotosList(offset, authorFilter);
@@ -61,8 +65,8 @@ const PhotosList: FunctionComponent<{
     }, [authorFilter])
 
     useEffect(() => {
-      clearAllData("posts");
-      photosList.forEach((photo: any) => writeData("posts", photo));
+      // clearAllData("posts");
+      // photosList.forEach((photo: any) => writeData("posts", photo));
     }, [photosList]);
 
     if (error) {
@@ -79,7 +83,7 @@ const PhotosList: FunctionComponent<{
               loadMore={getPhotosListFromDb}
             >
               {photosList.map(photo => (
-                <PhotoItem {...photo} key={photo._id} />
+                <PhotoItem {...photo} userData={userData} key={photo._id} />
               ))}
             </InfiniteScroll>
           </Grid>
@@ -95,6 +99,7 @@ const mapDispatchToProps = (dispatch: any) => ({
 });
 
 const mapStateToProps = (state: any) => ({
+  userData: state.user.userData,
   photosList: photosListSelector(state),
   error: state.photos.photosListError,
   offset: state.photos.photosListOffset,

@@ -72,3 +72,7 @@ export const API_ERRORS: IObjectOfStrings = {
 };
 
 export const ERROR_CODES = [400, 401, 404, 500, 503];
+
+export const CUSTOM_EVENTS = {
+  TOGGLE_FRIENDS_DRAWER: "TOGGLE_FRIENDS_DRAWER"
+};

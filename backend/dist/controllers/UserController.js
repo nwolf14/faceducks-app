@@ -19,7 +19,7 @@ const keys = require("../config/keys");
 const validateSignUpInput = require("../validation/signup");
 const validateSignInInput = require("../validation/signin");
 const { getByUserNameSerializer } = require("../serializers/users");
-const { NOTIFICATION_TYPES } = require("../config/constants");
+const { NOTIFICATION_TYPES } = require("../lib/constants");
 const create = function (req, res) {
     const { isValid, errors } = validateSignUpInput(req.body);
     const { password, email, userName } = req.body;
@@ -160,13 +160,15 @@ const get = function (req, res) {
     if (id) {
         User.findOne({ _id: id })
             .then((result) => {
-            const { friends, friends_requests, notifications } = result;
+            const { friends, friends_requests_incoming, avatar, friends_requests_outcoming, notifications } = result;
             res.json({
                 id,
                 userName,
                 email,
+                avatar,
                 friends,
-                friends_requests,
+                friends_requests_incoming,
+                friends_requests_outcoming,
                 notifications
             });
         })
@@ -253,7 +255,7 @@ const acceptFriendshipRequest = (req, res) => __awaiter(this, void 0, void 0, fu
                                 fromUser: userName
                             },
                             friends: {
-                                userName
+                                userName: fromUser
                             }
                         }
                     }, { useFindAndModify: true, session }),

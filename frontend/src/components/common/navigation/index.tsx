@@ -1,4 +1,9 @@
-import React, { memo, FunctionComponent, useCallback } from "react";
+import React, {
+  memo,
+  FunctionComponent,
+  useCallback,
+  Fragment
+} from "react";
 import {
   fade,
   makeStyles,
@@ -15,19 +20,19 @@ import Menu from "@material-ui/core/Menu";
 import MenuIcon from "@material-ui/icons/Menu";
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import NotificationsIcon from "@material-ui/icons/Notifications";
+import PeopleIcon from "@material-ui/icons/PeopleOutline";
 import PowerSettingsNew from "@material-ui/icons/PowerSettingsNew";
 import ArrowRightAlt from "@material-ui/icons/ArrowRightAlt";
 import { withRouter, RouteComponentProps } from "react-router";
 import { Tooltip } from "@material-ui/core";
 import { connect } from "react-redux";
-import { userData } from "../../../interfaces";
 
+import { userData } from "../../../interfaces";
 import { logoutUser } from "../../../redux/actions/users";
 import { LinkWrapper } from "../../_HOCs";
+import { UsersAutosuggester } from "../..";
+import { CUSTOM_EVENTS } from "../../../lib/constants";
 import "./styles.scss";
-import { updatePhotosListAuthorFilter } from "../../../redux/actions/photos";
-import { Autosuggest } from "../..";
-import { SuggestionItem } from "../../shared/autosuggest/suggestionsBox";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -100,19 +105,14 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-interface ISuggestedUser {
-  userName: string;
-  id: string;
-}
-
 const Navigation: FunctionComponent<
   {
     userData: userData;
     logoutUser: Function;
-    updatePhotosListAuthorFilter: Function;
   } & RouteComponentProps<{}>
-> = memo(({ history, logoutUser, userData, updatePhotosListAuthorFilter }) => {
+> = memo(({ history, logoutUser, userData }) => {
   const classes = useStyles();
+
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [
     mobileMoreAnchorEl,
@@ -145,17 +145,16 @@ const Navigation: FunctionComponent<
     setMobileMoreAnchorEl(event.currentTarget);
   }
 
-  const mapSuggestionListResponse = useCallback(
-    (user: ISuggestedUser): SuggestionItem => ({
-      value: user.userName,
-      label: user.userName
-    }),
+  const toggleFriendsDrawer = useCallback(
+    (event: React.MouseEvent<SVGSVGElement>) => {
+      event.target.dispatchEvent(
+        new CustomEvent(CUSTOM_EVENTS.TOGGLE_FRIENDS_DRAWER, {
+          bubbles: true
+        })
+      );
+    },
     []
   );
-
-  const updateFilter = useCallback((value: string) => {
-    updatePhotosListAuthorFilter(value);
-  }, []);
 
   const menuId = "primary-search-account-menu";
   const renderMenu = (
@@ -185,40 +184,40 @@ const Navigation: FunctionComponent<
       onClose={handleMobileMenuClose}
     >
       {userData && (
-        <MenuItem>
-          <IconButton aria-label="Show 11 new notifications" color="inherit">
-            <Badge badgeContent={11} color="secondary">
-              <NotificationsIcon />
-            </Badge>
-          </IconButton>
-          <p>Notifications</p>
-        </MenuItem>
-      )}
-      {userData && (
-        <MenuItem onClick={handleProfileMenuOpen}>
-          <IconButton
-            aria-label="set new avatar"
-            aria-controls="primary-search-account-menu"
-            aria-haspopup="true"
-            color="inherit"
-          >
-            <AccountCircle />
-          </IconButton>
-          <p>Avatar</p>
-        </MenuItem>
-      )}
-      {userData && (
-        <MenuItem onClick={signOut}>
-          <IconButton
-            aria-label="Logout"
-            color="inherit"
-            aria-controls={menuId}
-            aria-haspopup="true"
-          >
-            <PowerSettingsNew />
-          </IconButton>
-          <p>Logout</p>
-        </MenuItem>
+        <Fragment>
+          <MenuItem>
+            <IconButton aria-label="Show 11 new notifications" color="inherit">
+              <Badge badgeContent={11} color="secondary">
+                <NotificationsIcon />
+              </Badge>
+            </IconButton>
+            <p>Notifications</p>
+          </MenuItem>
+
+          <MenuItem onClick={handleProfileMenuOpen}>
+            <IconButton
+              aria-label="set new avatar"
+              aria-controls="primary-search-account-menu"
+              aria-haspopup="true"
+              color="inherit"
+            >
+              <AccountCircle />
+            </IconButton>
+            <p>Avatar</p>
+          </MenuItem>
+
+          <MenuItem onClick={signOut}>
+            <IconButton
+              aria-label="Logout"
+              color="inherit"
+              aria-controls={menuId}
+              aria-haspopup="true"
+            >
+              <PowerSettingsNew />
+            </IconButton>
+            <p>Logout</p>
+          </MenuItem>
+        </Fragment>
       )}
 
       {!userData && (
@@ -252,53 +251,62 @@ const Navigation: FunctionComponent<
           >
             <MenuIcon />
           </IconButton>
+
           <Typography className={classes.title} variant="h6" noWrap>
             <LinkWrapper href="/" ariaLabel="go to home page">
               face-ducks.com
             </LinkWrapper>
           </Typography>
-          <Autosuggest
-            handleSuggestionSelect={updateFilter}
-            suggestionListApiUrl="/api/users/getByUserName/"
-            mapSuggestionListResponse={mapSuggestionListResponse}
-          />
+
+          <UsersAutosuggester />
+
           <div className={classes.grow} />
           <div className={classes.sectionDesktop}>
             {userData && (
-              <Tooltip title="Set new avatar">
-                <IconButton
-                  edge="end"
-                  aria-label="set new avatar"
-                  aria-controls={menuId}
-                  aria-haspopup="true"
-                  onClick={handleProfileMenuOpen}
-                  color="inherit"
-                >
-                  <AccountCircle />
-                </IconButton>
-              </Tooltip>
-            )}
-            {userData && (
-              <Tooltip title="Notifications">
-                <IconButton aria-label="Show new notifications" color="inherit">
-                  <Badge badgeContent={17} color="secondary">
-                    <NotificationsIcon />
-                  </Badge>
-                </IconButton>
-              </Tooltip>
-            )}
-            {userData && (
-              <Tooltip title="Logout">
-                <IconButton
-                  aria-label="Logout"
-                  color="inherit"
-                  aria-controls={menuId}
-                  aria-haspopup="true"
-                  onClick={signOut}
-                >
-                  <PowerSettingsNew />
-                </IconButton>
-              </Tooltip>
+              <Fragment>
+                <Tooltip title="Set new avatar">
+                  <IconButton
+                    edge="end"
+                    aria-label="set new avatar"
+                    aria-controls={menuId}
+                    aria-haspopup="true"
+                    onClick={handleProfileMenuOpen}
+                    color="inherit"
+                  >
+                    <AccountCircle />
+                  </IconButton>
+                </Tooltip>
+
+                <Tooltip title="Friends">
+                  <IconButton
+                    aria-label="Show your friends list"
+                    color="inherit"
+                  >
+                    <PeopleIcon onClick={toggleFriendsDrawer} />
+                  </IconButton>
+                </Tooltip>
+
+                <Tooltip title="Notifications">
+                  <IconButton
+                    aria-label="Show new notifications"
+                    color="inherit"
+                  >
+                    <Badge badgeContent={17} color="secondary">
+                      <NotificationsIcon />
+                    </Badge>
+                  </IconButton>
+                </Tooltip>
+
+                <Tooltip title="Logout">
+                  <IconButton
+                    aria-label="Logout"
+                    color="inherit"
+                    onClick={signOut}
+                  >
+                    <PowerSettingsNew />
+                  </IconButton>
+                </Tooltip>
+              </Fragment>
             )}
             {!userData && (
               <LinkWrapper href="/login" ariaLabel="go to login page">
@@ -308,6 +316,7 @@ const Navigation: FunctionComponent<
           </div>
         </Toolbar>
       </AppBar>
+
       {renderMobileMenu}
       {renderMenu}
     </div>
@@ -320,9 +329,7 @@ function mapStateToProps(state: any) {
 
 function mapDispatchToProps(dispatch: any) {
   return {
-    logoutUser: () => dispatch(logoutUser()),
-    updatePhotosListAuthorFilter: (value: string) =>
-      dispatch(updatePhotosListAuthorFilter(value))
+    logoutUser: () => dispatch(logoutUser())
   };
 }
 

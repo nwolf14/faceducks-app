@@ -4,8 +4,9 @@
   "description": "",
   "main": "./dist/server.js",
   "scripts": {
-    "start": "nodemon ./dist/server.js && tsc -w",
-    "debug": "NODE_ENV=local-debug nodemon --inspect ./dist/server.js && tsc -w"
+    "start": "NODE_ENV=prod node ./dist/server.js",
+    "qa": "NODE_ENV=qa nodemon --inspect ./dist/server.js && tsc -w",
+    "local": "NODE_ENV=local nodemon --inspect ./dist/server.js && tsc -w"
   },
   "author": "",
   "license": "ISC",

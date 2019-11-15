@@ -1,4 +1,4 @@
-import { IPhoto } from "../interfaces";
+import { IPhoto } from "../lib/interfaces";
 export {};
 
 const Photo = require("../models/Photo");

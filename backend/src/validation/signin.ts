@@ -1,4 +1,4 @@
-import { IUserInput } from "../interfaces";
+import { IUserInput } from "../lib/interfaces";
 const Validator = require("validator");
 const _ = require('lodash');
 

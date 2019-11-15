@@ -1,4 +1,4 @@
-import React, { FunctionComponent, memo, Fragment } from "react";
+import React, { FunctionComponent, memo, Fragment, useMemo } from "react";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
 import Card from "@material-ui/core/Card";
@@ -16,6 +16,7 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import PersonAddIcon from "@material-ui/icons/PersonAdd";
 import PersonOutlinedIcon from "@material-ui/icons/PersonOutlined";
 import PeopleIcon from "@material-ui/icons/PeopleOutline";
+import { userData } from "../../../interfaces";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -57,6 +58,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export interface IPhotoItemProps {
+  userData: userData;
   author: string;
   created_at: string;
   photo: string;
@@ -68,7 +70,8 @@ const PhotoItem: FunctionComponent<IPhotoItemProps> = ({
   author,
   created_at,
   photo,
-  description
+  description,
+  userData
 }) => {
   const classes = useStyles();
   const [expanded, setExpanded] = React.useState(false);
@@ -77,14 +80,30 @@ const PhotoItem: FunctionComponent<IPhotoItemProps> = ({
     setExpanded(!expanded);
   }
 
+  const AddFriendsIcon = useMemo(() => {
+    if (userData && userData.userName !== author) {
+      if (
+        !userData.friends[author] &&
+        !userData.friends_requests_outcoming[author] &&
+        !userData.friends_requests_incoming[author]
+      ) {
+        return <PersonAddIcon classes={{ root: classes.icon }} />;
+      } else if (userData.friends[author]) {
+        return <PeopleIcon classes={{ root: classes.icon }} />;
+      } else {
+        return <PersonOutlinedIcon classes={{ root: classes.icon }} />;
+      }
+    }
+
+    return null;
+  }, [userData]);
+
   return (
     <Card className={classes.card}>
       <CardHeader
         avatar={
           <Fragment>
-            <div className={classes.iconsWrapper}>
-              <PersonAddIcon classes={{root: classes.icon}}/>
-            </div>
+            <div className={classes.iconsWrapper}>{AddFriendsIcon}</div>
             <Avatar
               aria-label={`${author}'s avatar`}
               className={classes.avatar}
